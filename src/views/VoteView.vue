@@ -2,15 +2,13 @@
   <div>
     <v-container class="">
       <v-row :justify="justifycontent.center">
-        <v-col cols="5" v-for="plan in plans" :key="plan">
+        <v-col cols="5" v-for="plan in plandata" :key="plan.title">
           <v-card class="mx-auto" max-width="344">
             <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
 
-            <v-card-title>タイトルダミー</v-card-title>
+            <v-card-title>{{ plan.title }}</v-card-title>
 
-            <v-card-subtitle
-              >説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー説明ダミー</v-card-subtitle
-            >
+            <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
 
             <v-btn block>投票する</v-btn>
           </v-card>
@@ -41,27 +39,29 @@ import db from "../firebase/firestore";
 
 @Component({})
 export default class VoteViewComponent extends Vue {
-  show: boolean = false;
   mounted() {
     console.log(this.getdata());
   }
 
-  plans: object = [
+  plandata: any = [];
+
+  plans = [
     { description: "Aの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "A" },
     { description: "Bの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "B" },
     { description: "Cの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "C" },
     { description: "Dの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "D" },
   ];
 
-  justifycontent: object = {
+  justifycontent = {
     center: "center",
   };
 
   async getdata() {
-    const querySnapshot = await getDocs(collection(db, "plans"));
+    const citiesRef = collection(db, "plans");
+    const querySnapshot = await getDocs(citiesRef);
     querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
       console.log(doc.id, " => ", doc.data());
+      this.plandata.push(doc.data());
     });
   }
 }
