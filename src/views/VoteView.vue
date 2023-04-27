@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 
@@ -59,7 +59,7 @@ export default class VoteViewComponent extends Vue {
         title: data.title,
         description: data.description,
         created_at: data.created_at,
-        update_at: data.update_at,
+        updated_at: data.update_at,
       };
       return plan;
     });
@@ -67,21 +67,31 @@ export default class VoteViewComponent extends Vue {
 
   async postVote(plan_id: string) {
     const user_id = "9r3AALbDGogMCH9sz0Hk"; //To do userデータ入れる
-    const votesObject = {
+    const vote_id_object = {
       plan_id: plan_id,
       user_id: user_id, //To do userId入れる
       created_at: new Date(),
-      update_at: new Date(),
+      updated_at: new Date(),
     };
 
-    // usersにサブコレクション挿入
     const usersVotesCollectionPath = collection(db, "users", user_id, "votes");
-    const usersVotesAddRef = await addDoc(usersVotesCollectionPath, votesObject);
-    console.log("Document written with ID: ", usersVotesAddRef.id);
+    const votesPath = collection(db, "votes");
 
-    //votesコレクションに挿入
-    const votesAddRef = await addDoc(collection(db, "votes"), votesObject);
-    console.log("Document written with ID: ", votesAddRef.id);
+    //データ挿入
+    try {
+      await runTransaction(db, async (transaction) => {
+        const usersVotesRef = doc(usersVotesCollectionPath);
+        const votesRef = doc(votesPath);
+
+        // 両方のドキュメントをトランザクション内で追加
+        transaction.set(usersVotesRef, vote_id_object);
+        transaction.set(votesRef, vote_id_object);
+        console.log("Transaction successful");
+      });
+    } catch (error) {
+      //片方の処理がエラーだった場合
+      console.error("Transaction failed: ", error);
+    }
   }
 }
 </script>
