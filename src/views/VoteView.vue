@@ -10,7 +10,7 @@
 
             <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
 
-            <v-btn block>投票する</v-btn>
+            <v-btn block @click="postVote(plan.id)">投票する</v-btn>
           </v-card>
         </v-col>
       </v-row>
@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 
@@ -55,13 +55,43 @@ export default class VoteViewComponent extends Vue {
     this.plans = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       const plan: Plan = {
+        id: doc.id,
         title: data.title,
         description: data.description,
         created_at: data.created_at,
-        update_at: data.update_at,
+        updated_at: data.update_at,
       };
       return plan;
     });
+  }
+
+  async postVote(plan_id: string) {
+    const user_id = "9r3AALbDGogMCH9sz0Hk"; //To do userデータ入れる
+    const vote_id_object = {
+      plan_id: plan_id,
+      user_id: user_id, //To do userId入れる
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    const usersVotesCollectionPath = collection(db, "users", user_id, "votes");
+    const votesPath = collection(db, "votes");
+
+    //データ挿入
+    try {
+      await runTransaction(db, async (transaction) => {
+        const usersVotesRef = doc(usersVotesCollectionPath);
+        const votesRef = doc(votesPath);
+
+        // 両方のドキュメントをトランザクション内で追加
+        transaction.set(usersVotesRef, vote_id_object);
+        transaction.set(votesRef, vote_id_object);
+        console.log("Transaction successful");
+      });
+    } catch (error) {
+      //片方の処理がエラーだった場合
+      console.error("Transaction failed: ", error);
+    }
   }
 }
 </script>
