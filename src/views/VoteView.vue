@@ -41,7 +41,7 @@ import { Plan } from "../types/Plan";
 @Component({})
 export default class VoteViewComponent extends Vue {
   mounted() {
-    console.log(this.getdata());
+    console.log(this.getPlans());
   }
 
   justifycontent = {
@@ -49,17 +49,18 @@ export default class VoteViewComponent extends Vue {
   };
 
   plans: Plan[] = new Array();
-  async getdata() {
+  async getPlans() {
     const citiesRef = collection(db, "plans");
     const querySnapshot = await getDocs(citiesRef);
-    querySnapshot.docs.map((doc) => {
+    this.plans = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
       const plan: Plan = {
-        title: doc.data().title,
-        description: doc.data().description,
-        created_at: doc.data().created_at,
-        update_at: doc.data().update_at,
+        title: data.title,
+        description: data.description,
+        created_at: data.created_at,
+        update_at: data.update_at,
       };
-      this.plans.push(plan);
+      return plan;
     });
   }
 }
