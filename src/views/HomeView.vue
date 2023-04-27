@@ -1,12 +1,11 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" class="logo" />
-    <div>
-      <p class="head">投票ページへようこそ</p>
-      <router-link to="/vote" class="voteBtn">投票する</router-link>
+    <p class="head">投票ページへようこそ</p>
+    <div class="wrap">
+      <router-link to="/vote"><v-btn color="primary" elevation="2" block>投票する</v-btn></router-link>
       <div class="authBtns">
-        <router-link to="/signup" class="">会員登録</router-link>
-        <router-link to="/signin" class="">ログイン</router-link>
+        <router-link to="/signup" class=""><v-btn color="blue" text>会員登録</v-btn></router-link>
+        <router-link to="/signin" class=""><v-btn color="blue" text>ログイン</v-btn></router-link>
       </div>
     </div>
   </div>
@@ -14,45 +13,26 @@
 <style lang="scss">
 .head {
   text-align: center;
+  font-size: 40px;
+  font-weight: 700;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto;
+.home {
+  padding: 80px 0;
 }
 
-.voteBtn {
-  display: block;
+.wrap {
   max-width: 300px;
   margin: 0 auto;
-  text-decoration: none;
-  border: solid 1px blue;
-  color: blue;
-  padding: 4px 8px;
-  border-radius: 8px;
-  text-align: center;
-  transition-duration: 0.3s;
-  font-weight: 700;
-  font-size: 20px;
-  margin-bottom: 24px;
-  &:hover {
-    background-color: blue;
-    color: #fff;
-  }
+  padding-top: 40px;
 }
 
 .authBtns {
+  margin-top: 40px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   gap: 24px;
-  > a {
-    text-decoration: none;
-    color: #000;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 }
 </style>
 
