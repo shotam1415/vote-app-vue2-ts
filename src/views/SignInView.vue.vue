@@ -1,64 +1,32 @@
 <template>
   <div class="signin">
-    <h1 class="mainCopy">会員登録</h1>
-    <div>
-      <form class="form" method="post">
-        <div class="form__unit">
-          <label>メールアドレス</label>
-          <input name="email" type="email" />
-        </div>
-        <div class="form__unit">
-          <label>パスワード</label>
-          <input name="password" type="password" />
-        </div>
-        <button class="form__button" type="submit">会員登録</button>
-      </form>
-    </div>
+    <v-card width="400px" class="mx-auto mt-5">
+      <v-card-title>
+        <h1 class="display-1">ログイン</h1>
+      </v-card-title>
+      <v-card-text>
+        <v-form>
+          <v-text-field prepend-icon="mdi-account-circle" type="email" label="メールアドレス" />
+          <v-text-field
+            @click:append="showPassword = !showPassword"
+            v-bind:append-icon="!showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            v-bind:type="showPassword ? 'text' : 'password'"
+            prepend-icon="mdi-lock"
+            label="パスワード"
+          />
+          <v-card-actions>
+            <v-btn>ログイン</v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
-<style lang="scss">
-.form {
-  max-width: 300px;
-  margin: 0 auto;
-  .form__unit {
-    margin-bottom: 24px;
-    font-size: 16px;
-    label {
-      display: block;
-      text-align: left;
-      margin-bottom: 4px;
-    }
-    input {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      border-radius: 4px;
-      border: solid 1px #000;
-    }
-  }
-}
+<script lang="ts">
+import { Component, Vue } from "vue-property-decorator";
 
-.form__button {
-  display: block;
-  max-width: 200px;
-  width: 100%;
-  margin: 0 auto;
-  text-decoration: none;
-  border: solid 1px #394867;
-  color: #394867;
-  padding: 4px 8px;
-  border-radius: 8px;
-  text-align: center;
-  transition-duration: 0.3s;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  background-color: #fff;
-  margin-top: 40px;
-  &:hover {
-    border: solid 1px #212a3e;
-    background-color: #212a3e;
-    color: #fff;
-  }
+@Component
+export default class SigninView extends Vue {
+  showPassword: boolean = false;
 }
-</style>
+</script>
