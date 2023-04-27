@@ -10,7 +10,7 @@
 
             <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
 
-            <v-btn block>投票する</v-btn>
+            <v-btn block @click="postVote(plan.id)">投票する</v-btn>
           </v-card>
         </v-col>
       </v-row>
@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 
@@ -55,6 +55,7 @@ export default class VoteViewComponent extends Vue {
     this.plans = querySnapshot.docs.map((doc) => {
       const data = doc.data();
       const plan: Plan = {
+        id: doc.id,
         title: data.title,
         description: data.description,
         created_at: data.created_at,
@@ -62,6 +63,16 @@ export default class VoteViewComponent extends Vue {
       };
       return plan;
     });
+  }
+
+  async postVote(plan_id: string) {
+    const docRef = await addDoc(collection(db, "votes"), {
+      plan_id: plan_id,
+      user_id: "b7b9f406-84dd-68e3-8f98-f119ba48d543", //To do userId入れる
+      created_at: new Date(),
+      update_at: new Date(),
+    });
+    console.log("Document written with ID: ", docRef.id);
   }
 }
 </script>
