@@ -40,6 +40,7 @@ export default class SigninView extends Vue {
       .then((userCredential) => {
         const user = userCredential.user;
         console.log(user);
+        this.$router.push("/vote");
       })
       .catch((error) => {
         const errorCode = error.code;
