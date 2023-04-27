@@ -66,13 +66,22 @@ export default class VoteViewComponent extends Vue {
   }
 
   async postVote(plan_id: string) {
-    const docRef = await addDoc(collection(db, "votes"), {
+    const user_id = "9r3AALbDGogMCH9sz0Hk"; //To do userデータ入れる
+    const votesObject = {
       plan_id: plan_id,
-      user_id: "b7b9f406-84dd-68e3-8f98-f119ba48d543", //To do userId入れる
+      user_id: user_id, //To do userId入れる
       created_at: new Date(),
       update_at: new Date(),
-    });
-    console.log("Document written with ID: ", docRef.id);
+    };
+
+    // usersにサブコレクション挿入
+    const usersVotesCollectionPath = collection(db, "users", user_id, "votes");
+    const usersVotesAddRef = await addDoc(usersVotesCollectionPath, votesObject);
+    console.log("Document written with ID: ", usersVotesAddRef.id);
+
+    //votesコレクションに挿入
+    const votesAddRef = await addDoc(collection(db, "votes"), votesObject);
+    console.log("Document written with ID: ", votesAddRef.id);
   }
 }
 </script>
