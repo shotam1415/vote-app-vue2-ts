@@ -2,7 +2,7 @@
   <div>
     <v-container class="">
       <v-row :justify="justifycontent.center">
-        <v-col cols="5" v-for="plan in plandata" :key="plan.title">
+        <v-col cols="5" v-for="plan in plans" :key="plan.title">
           <v-card class="mx-auto" max-width="344">
             <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
 
@@ -36,6 +36,7 @@
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { collection, getDocs } from "firebase/firestore";
 import db from "../firebase/firestore";
+import { Plan } from "../types/Plan";
 
 @Component({})
 export default class VoteViewComponent extends Vue {
@@ -43,25 +44,22 @@ export default class VoteViewComponent extends Vue {
     console.log(this.getdata());
   }
 
-  plandata: any = [];
-
-  plans = [
-    { description: "Aの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "A" },
-    { description: "Bの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "B" },
-    { description: "Cの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "C" },
-    { description: "Dの説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。説明です。", title: "D" },
-  ];
-
   justifycontent = {
     center: "center",
   };
 
+  plans: Plan[] = new Array();
   async getdata() {
     const citiesRef = collection(db, "plans");
     const querySnapshot = await getDocs(citiesRef);
-    querySnapshot.forEach((doc) => {
-      console.log(doc.id, " => ", doc.data());
-      this.plandata.push(doc.data());
+    querySnapshot.docs.map((doc) => {
+      const plan: Plan = {
+        title: doc.data().title,
+        description: doc.data().description,
+        created_at: doc.data().created_at,
+        update_at: doc.data().update_at,
+      };
+      this.plans.push(plan);
     });
   }
 }
