@@ -47,7 +47,9 @@ export default class AppComponent extends Vue {
       const userSnap = await getDoc(usersRef);
       if (userSnap.exists()) {
         console.log("Document data:", userSnap.data());
-        this.$store.commit("setCurrentUser", userSnap.data());
+        const CurrentUser = userSnap.data();
+        CurrentUser.id = user_id;
+        this.$store.commit("setCurrentUser", CurrentUser);
       } else {
         console.log("No such document!");
       }

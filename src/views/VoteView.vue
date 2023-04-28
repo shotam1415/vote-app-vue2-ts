@@ -1,20 +1,23 @@
 <template>
-  <div>
-    <v-container class="">
+  <div class="vote">
+    <v-container>
+      <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
+      <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
       <v-row :justify="justifycontent.center">
-        <v-col cols="5" v-for="plan in plans" :key="plan.title">
-          <v-card class="mx-auto" max-width="344">
-            <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
-
-            <v-card-title>{{ plan.title }}</v-card-title>
-
-            <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
-
-            <v-btn block @click="postVote(plan.id)">投票する</v-btn>
-          </v-card>
+        <v-col cols="5" v-for="plan in plans" :key="plan.title" @click="isChosePlanId = plan.id">
+          <div :class="{ isPlanActive: isChosePlanId === plan.id }" class="isPlan">
+            <v-card class="mx-auto" max-width="344">
+              <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
+              <v-card-title>{{ plan.title }}</v-card-title>
+              <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
+            </v-card>
+          </div>
         </v-col>
       </v-row>
     </v-container>
+    <div class="btnWrap">
+      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!isChosePlanId || isVoting" @click="postVote">投票する</v-btn>
+    </div>
     <div class="note">
       <p>Cardのサムネイルに使用している画像の引用先</p>
       著作者：<a
@@ -27,8 +30,23 @@
 </template>
 
 <style lang="scss">
+.btnWrap {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 .note {
   text-align: center;
+}
+.isPlan {
+  margin: 0 auto;
+  max-width: 344px;
+  border-radius: 4px;
+  border: solid 2px white;
+}
+
+.isPlanActive {
+  border: solid 2px red;
 }
 </style>
 
@@ -37,9 +55,15 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
+import { User } from "../types/User";
 
 @Component({})
 export default class VoteViewComponent extends Vue {
+  successMessage: string = "";
+  errorMessage: string = "";
+  isVoting: boolean = false;
+  isChosePlanId: string = "";
+
   mounted() {
     console.log(this.getPlans());
   }
@@ -65,19 +89,34 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
-  async postVote(plan_id: string) {
-    const user_id = "9r3AALbDGogMCH9sz0Hk"; //To do userデータ入れる
+  async postVote() {
+    if (this.isVoting) {
+      return false;
+    }
+    this.isVoting = true;
+    if (!this.isCurrentUser) {
+      return false;
+    }
+
+    const user_id = this.isCurrentUser.id;
     const vote_id_object = {
-      plan_id: plan_id,
-      user_id: user_id, //To do userId入れる
+      plan_id: this.isChosePlanId,
+      user_id: user_id,
       created_at: new Date(),
       updated_at: new Date(),
     };
 
     const usersVotesCollectionPath = collection(db, "users", user_id, "votes");
     const votesPath = collection(db, "votes");
+    const usersVotesSnapshot = await getDocs(usersVotesCollectionPath);
+    const isUsersVotesCollection = usersVotesSnapshot.empty;
 
     //データ挿入
+    if (!isUsersVotesCollection) {
+      this.errorMessage = "既に投票すみです。";
+      this.isVoting = false;
+      return false;
+    }
     try {
       await runTransaction(db, async (transaction) => {
         const usersVotesRef = doc(usersVotesCollectionPath);
@@ -87,10 +126,18 @@ export default class VoteViewComponent extends Vue {
         transaction.set(usersVotesRef, vote_id_object);
         transaction.set(votesRef, vote_id_object);
         console.log("Transaction successful");
+        this.successMessage = "投票が完了しました。";
+        this.isVoting = false;
       });
     } catch (error) {
       //片方の処理がエラーだった場合
       console.error("Transaction failed: ", error);
+      this.isVoting = false;
+    }
+  }
+  get isCurrentUser(): User | undefined {
+    if (this.$store.getters.currentUser) {
+      return this.$store.getters.currentUser;
     }
   }
 }
