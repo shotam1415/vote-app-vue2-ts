@@ -28,7 +28,6 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import "../firebase/firebase";
 import { convertErrorCode } from "../lib/convertErrorCode";
 @Component
 export default class SigninView extends Vue {
