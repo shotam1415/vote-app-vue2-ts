@@ -1,6 +1,8 @@
 <template>
   <div>
     <v-container class="">
+      <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
+      <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
       <v-row :justify="justifycontent.center">
         <v-col cols="5" v-for="plan in plans" :key="plan.title">
           <v-card class="mx-auto" max-width="344">
@@ -41,6 +43,9 @@ import { User } from "../types/User";
 
 @Component({})
 export default class VoteViewComponent extends Vue {
+  successMessage: string = "";
+  errorMessage: string = "";
+
   mounted() {
     console.log(this.getPlans());
   }
@@ -72,7 +77,7 @@ export default class VoteViewComponent extends Vue {
     }
 
     console.log(this.isCurrentUser);
-    const user_id = this.isCurrentUser.id; //To do userデータ入れる
+    const user_id = this.isCurrentUser.id;
     const vote_id_object = {
       plan_id: plan_id,
       user_id: user_id,
@@ -82,8 +87,14 @@ export default class VoteViewComponent extends Vue {
 
     const usersVotesCollectionPath = collection(db, "users", user_id, "votes");
     const votesPath = collection(db, "votes");
+    const usersVotesSnapshot = await getDocs(usersVotesCollectionPath);
+    const isUsersVotesCollection = usersVotesSnapshot.empty;
 
     //データ挿入
+    if (!isUsersVotesCollection) {
+      this.errorMessage = "既に投票すみです。";
+      return false;
+    }
     try {
       await runTransaction(db, async (transaction) => {
         const usersVotesRef = doc(usersVotesCollectionPath);
@@ -93,6 +104,7 @@ export default class VoteViewComponent extends Vue {
         transaction.set(usersVotesRef, vote_id_object);
         transaction.set(votesRef, vote_id_object);
         console.log("Transaction successful");
+        this.successMessage = "投票が完了しました。";
       });
     } catch (error) {
       //片方の処理がエラーだった場合
