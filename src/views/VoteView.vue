@@ -37,6 +37,7 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
+import { User } from "../types/User";
 
 @Component({})
 export default class VoteViewComponent extends Vue {
@@ -66,10 +67,15 @@ export default class VoteViewComponent extends Vue {
   }
 
   async postVote(plan_id: string) {
-    const user_id = "9r3AALbDGogMCH9sz0Hk"; //To do userデータ入れる
+    if (!this.isCurrentUser) {
+      return false;
+    }
+
+    console.log(this.isCurrentUser);
+    const user_id = this.isCurrentUser.id; //To do userデータ入れる
     const vote_id_object = {
       plan_id: plan_id,
-      user_id: user_id, //To do userId入れる
+      user_id: user_id,
       created_at: new Date(),
       updated_at: new Date(),
     };
@@ -91,6 +97,11 @@ export default class VoteViewComponent extends Vue {
     } catch (error) {
       //片方の処理がエラーだった場合
       console.error("Transaction failed: ", error);
+    }
+  }
+  get isCurrentUser(): User | undefined {
+    if (this.$store.getters.currentUser) {
+      return this.$store.getters.currentUser;
     }
   }
 }
