@@ -70,6 +70,8 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import Chart from "@/components/Chart.vue";
+import { User } from "../types/User";
+import { getAuth, signOut } from "firebase/auth";
 
 @Component({
   components: {
@@ -114,6 +116,21 @@ export default class AdminViewComponent extends Vue {
   changeNav(num: number) {
     this.navNum = num;
     console.log(this.navNum);
+  }
+  get isCurrentUser(): User | undefined {
+    if (this.$store.getters.currentUser) {
+      return this.$store.getters.currentUser;
+    }
+  }
+  async mounted() {
+    getAuth().onAuthStateChanged(() => {
+      if (!this.isCurrentUser) {
+        return false;
+      }
+      if (this.isCurrentUser.role !== 0) {
+        this.$router.push("/vote");
+      }
+    });
   }
 }
 </script>
