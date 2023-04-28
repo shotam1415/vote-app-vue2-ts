@@ -19,6 +19,7 @@
             <v-btn @click="signin">ログイン</v-btn>
           </v-card-actions>
         </v-form>
+        <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
       </v-card-text>
     </v-card>
   </div>
@@ -27,12 +28,14 @@
 import { Component, Vue } from "vue-property-decorator";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import "../firebase/firebase";
+import { convertErrorCode } from "../lib/convertErrorCode";
 
 @Component
 export default class SigninView extends Vue {
   showPassword: boolean = false;
   email: string = "";
   password: string = "";
+  errorMessage: string | undefined = "";
 
   async signin() {
     const auth = getAuth();
@@ -44,7 +47,8 @@ export default class SigninView extends Vue {
       })
       .catch((error) => {
         const errorCode = error.code;
-        const errorMessage = error.message;
+        this.errorMessage = convertErrorCode(errorCode);
+        console.log(errorCode);
       });
   }
 
