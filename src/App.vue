@@ -9,9 +9,8 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
+      <v-btn v-if="auth.currentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
     </v-app-bar>
-
     <v-main>
       <router-view />
     </v-main>
@@ -24,12 +23,12 @@
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import "./firebase/firebase";
 import { getAuth, signOut } from "firebase/auth";
-const auth = getAuth();
 
 @Component({})
 export default class AppComponent extends Vue {
+  auth = getAuth();
   async signOutEvent() {
-    signOut(auth)
+    signOut(this.auth)
       .then(() => {
         console.log("Sign-out successful.");
         this.$router.push("/signin");
@@ -38,6 +37,10 @@ export default class AppComponent extends Vue {
         console.log("An error happened.");
         console.log(error);
       });
+  }
+  mounted() {
+    console.log(this.auth);
+    console.log(this.auth.currentUser);
   }
 }
 </script>
