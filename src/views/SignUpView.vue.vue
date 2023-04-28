@@ -6,7 +6,8 @@
       </v-card-title>
       <v-card-text>
         <v-form>
-          <v-text-field prepend-icon="mdi-account-circle" type="email" label="メールアドレス" v-model="email" />
+          <v-text-field prepend-icon="mdi-account-circle" type="text" label="ニックネーム" v-model="name" />
+          <v-text-field prepend-icon="mdi-email-outline" type="email" label="メールアドレス" v-model="email" />
           <v-text-field
             @click:append="showPassword = !showPassword"
             v-bind:append-icon="!showPassword ? 'mdi-eye-off' : 'mdi-eye'"
@@ -28,20 +29,37 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore";
+import db from "../firebase/firestore";
 import { convertErrorCode } from "../lib/convertErrorCode";
 @Component
 export default class SigninView extends Vue {
   showPassword: boolean = false;
+  name: string = "";
   email: string = "";
   password: string = "";
   errorMessage: string | undefined = "";
 
-  async signup() {
-    const auth = getAuth();
+  signup() {
+    //Todo ボタン２度押しされないようにする
+    const auth = getAuth(); //Todo 後で消す
     createUserWithEmailAndPassword(auth, this.email, this.password)
-      .then((userCredential) => {
+      .then(async (userCredential) => {
         const user = userCredential.user;
-        console.log(user);
+        const userIdObject = {
+          name: this.name,
+          email: this.email,
+          role: 1,
+          auth_id: user.uid,
+          created_at: new Date(),
+          update_at: new Date(),
+        };
+        const usersRef = collection(db, "users");
+        const docRef = await addDoc(usersRef, userIdObject);
+        console.log("Document written with ID: ", docRef.id);
+      })
+      .then(() => {
+        console.log("success");
         this.$router.push("/vote");
       })
       .catch((error) => {
