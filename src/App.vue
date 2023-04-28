@@ -23,6 +23,8 @@
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import "./firebase/firebase";
 import { getAuth, signOut } from "firebase/auth";
+import { getDoc, doc } from "@firebase/firestore";
+import db from "./firebase/firestore";
 
 @Component({})
 export default class AppComponent extends Vue {
@@ -38,9 +40,22 @@ export default class AppComponent extends Vue {
         console.log(error);
       });
   }
+  async getCurrentUser() {
+    const user_id = this.auth.currentUser?.uid;
+    if (user_id) {
+      const usersRef = doc(db, "users", user_id);
+      const userSnap = await getDoc(usersRef);
+      if (userSnap.exists()) {
+        console.log("Document data:", userSnap.data());
+      } else {
+        // doc.data() will be undefined in this case
+        console.log("No such document!");
+      }
+    }
+  }
+
   mounted() {
-    console.log(this.auth);
-    console.log(this.auth.currentUser);
+    this.getCurrentUser();
   }
 }
 </script>
