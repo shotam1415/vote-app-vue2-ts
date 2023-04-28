@@ -17,6 +17,7 @@
           />
           <v-card-actions>
             <v-btn @click="signin">ログイン</v-btn>
+            <router-link to="/signup" class=""><v-btn color="blue lighten-2" text> 会員登録はこちら </v-btn></router-link>
           </v-card-actions>
         </v-form>
         <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
