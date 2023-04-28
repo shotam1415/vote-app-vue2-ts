@@ -29,7 +29,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, setDoc, doc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { convertErrorCode } from "../lib/convertErrorCode";
 @Component
@@ -50,13 +50,12 @@ export default class SigninView extends Vue {
           name: this.name,
           email: this.email,
           role: 1,
-          auth_id: user.uid,
           created_at: new Date(),
           update_at: new Date(),
         };
-        const usersRef = collection(db, "users");
-        const docRef = await addDoc(usersRef, userIdObject);
-        console.log("Document written with ID: ", docRef.id);
+        const usersRef = doc(db, "users", user.uid);
+        const docRef = await setDoc(usersRef, userIdObject);
+        console.log(docRef);
       })
       .then(() => {
         console.log("success");
