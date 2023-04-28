@@ -9,12 +9,8 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn href="https://github.com/vuetifyjs/vuetify/releases/latest" target="_blank" text>
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
+      <v-btn v-if="auth.currentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
     </v-app-bar>
-
     <v-main>
       <router-view />
     </v-main>
@@ -24,13 +20,27 @@
 <style lang="scss"></style>
 
 <script lang="ts">
-import Vue from "vue";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import "./firebase/firebase";
+import { getAuth, signOut } from "firebase/auth";
 
-export default Vue.extend({
-  name: "App",
-
-  data: () => ({
-    //
-  }),
-});
+@Component({})
+export default class AppComponent extends Vue {
+  auth = getAuth();
+  async signOutEvent() {
+    signOut(this.auth)
+      .then(() => {
+        console.log("Sign-out successful.");
+        this.$router.push("/signin");
+      })
+      .catch((error) => {
+        console.log("An error happened.");
+        console.log(error);
+      });
+  }
+  mounted() {
+    console.log(this.auth);
+    console.log(this.auth.currentUser);
+  }
+}
 </script>
