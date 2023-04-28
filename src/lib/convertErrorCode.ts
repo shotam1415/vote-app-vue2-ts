@@ -8,5 +8,7 @@ export const convertErrorCode = (code: string) => {
       return "パスワードは6文字以上にしてください";
     case "auth/wrong-password":
       return "メールアドレスまたはパスワードが違います";
+    default:
+      return "送信エラーです。";
   }
 };
