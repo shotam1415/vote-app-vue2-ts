@@ -1,5 +1,5 @@
 <template>
-  <div class="signup">
+  <div class="signup" v-if="!isAuth">
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">会員登録</h1>
@@ -66,6 +66,22 @@ export default class SigninView extends Vue {
         this.errorMessage = convertErrorCode(errorCode);
         console.log(errorCode);
       });
+  }
+  get isAuth(): boolean | undefined {
+    if (this.$store.getters.isAuth) {
+      return this.$store.getters.isAuth;
+    }
+  }
+  async mounted() {
+    //ユーザーの権限判定
+    getAuth().onAuthStateChanged(() => {
+      if (!this.isAuth) {
+        return false;
+      }
+      if (this.isAuth) {
+        this.$router.push("/vote");
+      }
+    });
   }
 }
 </script>
