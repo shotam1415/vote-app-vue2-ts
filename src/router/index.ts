@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import HomeView from "../views/HomeView.vue";
+import store from "@/store";
 
 Vue.use(VueRouter);
 
@@ -29,11 +30,7 @@ const routes: Array<RouteConfig> = [
     path: "/admin",
     name: "admin",
     component: () => import(/* webpackChunkName: "admin" */ "../views/AdminView.vue"),
-  },
-  {
-    path: "/admin/votetotal",
-    name: "adminVotetotal",
-    component: () => import(/* webpackChunkName: "adminVotetotal" */ "../views/AdminVotetotalView.vue"),
+    meta: { adminRole: true },
   },
 ];
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="signin">
+  <div class="signin" v-if="!isCurrentUser">
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">ログイン</h1>
@@ -51,7 +51,22 @@ export default class SigninView extends Vue {
         console.log(errorCode);
       });
   }
+  get isCurrentUser(): any {
+    if (this.$store.getters.currentUser) {
+      return this.$store.getters.currentUser;
+    }
+  }
 
-  mounted() {}
+  async mounted() {
+    //ユーザーの権限判定
+    getAuth().onAuthStateChanged(() => {
+      if (!this.isCurrentUser) {
+        return false;
+      }
+      if (this.isCurrentUser) {
+        this.$router.push("/vote");
+      }
+    });
+  }
 }
 </script>

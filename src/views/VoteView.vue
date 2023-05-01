@@ -3,9 +3,18 @@
     <v-container>
       <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
       <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
+      <v-alert v-show="warningMessage" type="warning">{{ warningMessage }}<router-link to="/signup">こちらより</router-link>会員登録をお願いします。</v-alert>
       <v-row :justify="justifycontent.center">
-        <v-col cols="5" v-for="plan in plans" :key="plan.title" @click="isChosePlanId = plan.id">
-          <div :class="{ isPlanActive: isChosePlanId === plan.id }" class="isPlan">
+        <v-col
+          cols="5"
+          v-for="plan in plans"
+          :key="plan.title"
+          @click="
+            isChosePlan.id = plan.id;
+            isChosePlan.title = plan.title;
+          "
+        >
+          <div :class="{ isPlanActive: isChosePlan.id === plan.id }" class="isPlan">
             <v-card class="mx-auto" max-width="344">
               <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
               <v-card-title>{{ plan.title }}</v-card-title>
@@ -16,7 +25,7 @@
       </v-row>
     </v-container>
     <div class="btnWrap">
-      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!isChosePlanId || isVoting" @click="postVote">投票する</v-btn>
+      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!isChosePlan.id || isVoting" @click="postVote">投票する</v-btn>
     </div>
     <div class="note">
       <p>Cardのサムネイルに使用している画像の引用先</p>
@@ -61,8 +70,12 @@ import { User } from "../types/User";
 export default class VoteViewComponent extends Vue {
   successMessage: string = "";
   errorMessage: string = "";
+  warningMessage: string = "";
   isVoting: boolean = false;
-  isChosePlanId: string = "";
+  isChosePlan = {
+    id: "",
+    title: "",
+  };
 
   mounted() {
     console.log(this.getPlans());
@@ -95,20 +108,29 @@ export default class VoteViewComponent extends Vue {
     }
     this.isVoting = true;
     if (!this.isCurrentUser) {
+      this.warningMessage = "投票するには会員登録が必要です。";
+      this.isVoting = false;
       return false;
     }
 
     const user_id = this.isCurrentUser.id;
-    const vote_id_object = {
-      plan_id: this.isChosePlanId,
-      user_id: user_id,
+    const user_name = this.isCurrentUser.name;
+    const public_vote_id_object = {
+      plans_title: this.isChosePlan.title,
+      users_name: user_name,
       created_at: new Date(),
       updated_at: new Date(),
     };
 
-    const usersVotesCollectionPath = collection(db, "users", user_id, "votes");
-    const votesPath = collection(db, "votes");
-    const usersVotesSnapshot = await getDocs(usersVotesCollectionPath);
+    const user_vote_id_object = {
+      plans_title: this.isChosePlan.title,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+    const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
+    const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
+    const votesPath = collection(db, "public_votes");
+    const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
     const isUsersVotesCollection = usersVotesSnapshot.empty;
 
     //データ挿入
@@ -119,12 +141,12 @@ export default class VoteViewComponent extends Vue {
     }
     try {
       await runTransaction(db, async (transaction) => {
-        const usersVotesRef = doc(usersVotesCollectionPath);
-        const votesRef = doc(votesPath);
+        const usersVotesRef = doc(usersVotesCollectionPathDoc, this.isChosePlan.id);
+        const votesRef = doc(votesPath, this.isChosePlan.id);
 
         // 両方のドキュメントをトランザクション内で追加
-        transaction.set(usersVotesRef, vote_id_object);
-        transaction.set(votesRef, vote_id_object);
+        transaction.set(usersVotesRef, user_vote_id_object);
+        transaction.set(votesRef, public_vote_id_object);
         console.log("Transaction successful");
         this.successMessage = "投票が完了しました。";
         this.isVoting = false;

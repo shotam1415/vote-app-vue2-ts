@@ -1,7 +1,7 @@
 <template>
-  <div class="admin">
+  <div class="admin" v-if="isCurrentUser?.role === 0">
     <v-card-title>
-      <h1 class="display-1">会員登録</h1>
+      <h1 class="display-1">管理画面</h1>
     </v-card-title>
     <div class="layout">
       <nav class="layout__nav"></nav>
@@ -27,8 +27,7 @@
         </v-navigation-drawer>
       </v-card>
       <div class="layout__chart">
-        <div class="chartWrap" v-bind:class="{ isActive: navNum === 0 }"><Chart :chartData="chartData1" :options="options" /></div>
-        <div class="chartWrap" v-bind:class="{ isActive: navNum === 1 }"><Chart :chartData="chartData2" :options="options" /></div>
+        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><Chart v-if="isShow" :chartData="chartData" :options="options" /></div>
       </div>
     </div>
   </div>
@@ -70,6 +69,10 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import Chart from "@/components/Chart.vue";
+import { User } from "../types/User";
+import { getAuth, signOut } from "firebase/auth";
+import { collection, getDocs, runTransaction, doc, query, orderBy } from "firebase/firestore";
+import db from "../firebase/firestore";
 
 @Component({
   components: {
@@ -79,28 +82,22 @@ import Chart from "@/components/Chart.vue";
 export default class AdminViewComponent extends Vue {
   //変数
 
-  navItems = [
-    { title: "overview", icon: "mdi-notification-clear-all" },
-    { title: "votetotal", icon: "mdi-vote" },
-  ];
+  navItems = [{ title: "overview", icon: "mdi-notification-clear-all" }];
 
   navNum: number = 0;
-  chartData1 = {
-    labels: ["A", "B", "C", "D"],
+
+  isShow: boolean = false;
+
+  planList = new Array();
+  chartLabel = new Array();
+  chartTotal = new Array();
+
+  chartData = {
+    labels: this.chartLabel,
     datasets: [
       {
         label: "投票数",
-        data: [95, 70, 80, 65],
-        backgroundColor: "lightblue",
-      },
-    ],
-  };
-  chartData2 = {
-    labels: ["A", "B", "C", "D"],
-    datasets: [
-      {
-        label: "投票数",
-        data: [20, 30, 40, 55],
+        data: this.chartTotal,
         backgroundColor: "lightblue",
       },
     ],
@@ -110,10 +107,77 @@ export default class AdminViewComponent extends Vue {
     maintainAspectRatio: false,
   };
 
-  //関数
+  async getPublicVotes() {
+    //dbからプランを取得
+    const plansRef = query(collection(db, "plans"), orderBy("title", "asc"));
+    const planQuerySnapshot = await getDocs(plansRef);
+    this.planList = planQuerySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const planTitle = { title: data.title, count: 0 };
+      console.log(planTitle);
+      return planTitle;
+    });
+
+    //chartLabelに代入
+    for (let i = 0; i < this.planList.length; i++) {
+      this.chartLabel[i] = this.planList[i].title;
+    }
+
+    //dbから投票データ取得
+    const publicVotesRef = collection(db, "public_votes");
+    const querySnapshot = await getDocs(publicVotesRef);
+    const planTitleTotal = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const planTitleTotal = data.plans_title;
+      return planTitleTotal;
+    });
+
+    //planデータを整形
+    planTitleTotal.map((item, index) => {
+      for (let i = 0; i < this.planList.length; i++) {
+        if (item === this.planList[i].title) {
+          this.planList[i].count += 1;
+        }
+      }
+    });
+
+    //chartTotalに挿入
+    for (let i = 0; i < this.planList.length; i++) {
+      this.chartTotal[i] = this.planList[i].count;
+    }
+    console.log(this.chartTotal);
+    this.isShow = true;
+  }
+
   changeNav(num: number) {
     this.navNum = num;
     console.log(this.navNum);
+  }
+  get isCurrentUser(): User | undefined {
+    if (this.$store.getters.currentUser) {
+      return this.$store.getters.currentUser;
+    }
+  }
+  @Watch("isCurrentUser")
+  onChangeLoadingStatus() {
+    if (!this.isCurrentUser) {
+      return false;
+    }
+    if (this.isCurrentUser.role !== 0) {
+      this.$router.push("/vote");
+    }
+  }
+
+  async mounted() {
+    //ユーザーの権限判定
+    getAuth().onAuthStateChanged(() => {
+      if (!this.isCurrentUser || this.isCurrentUser.role !== 0) {
+        this.$router.push("/vote");
+      }
+    });
+    //データ取得
+    this.getPublicVotes();
+    // 子コンポーネントのメソッドを実行する
   }
 }
 </script>
