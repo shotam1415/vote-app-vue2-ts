@@ -171,10 +171,7 @@ export default class AdminViewComponent extends Vue {
   async mounted() {
     //ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
-      if (!this.isCurrentUser) {
-        return false;
-      }
-      if (this.isCurrentUser.role !== 0) {
+      if (!this.isCurrentUser || this.isCurrentUser.role !== 0) {
         this.$router.push("/vote");
       }
     });
