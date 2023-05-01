@@ -1,5 +1,5 @@
 <template>
-  <div class="signin" v-if="!isCurrentUser">
+  <div class="signin" v-if="!isSignin">
     <v-card width="400px" class="mx-auto mt-5">
       <v-card-title>
         <h1 class="display-1">ログイン</h1>
@@ -17,7 +17,7 @@
           />
           <v-card-actions>
             <v-btn @click="signin">ログイン</v-btn>
-            <router-link to="/signup" class=""><v-btn color="blue lighten-2" text> 会員登録はこちら </v-btn></router-link>
+            <router-link to="/signup" class=""><v-btn color="blue lighten-2" text>会員登録はこちら </v-btn></router-link>
           </v-card-actions>
         </v-form>
         <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
@@ -29,29 +29,33 @@
 import { Component, Vue } from "vue-property-decorator";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { convertErrorCode } from "../lib/convertErrorCode";
+import { User } from "../types/User";
 
 @Component
 export default class SigninView extends Vue {
+  //変数
   showPassword: boolean = false;
   email: string = "";
   password: string = "";
   errorMessage: string | undefined = "";
 
+  //methods
   async signin() {
-    const auth = getAuth();
-    signInWithEmailAndPassword(auth, this.email, this.password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(user);
-        this.$router.push("/vote");
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        this.errorMessage = convertErrorCode(errorCode);
-        console.log(errorCode);
-      });
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
+      const user = userCredential.user;
+      console.log(user);
+      this.$router.push("/vote");
+    } catch (error: any) {
+      const errorCode = error.code;
+      this.errorMessage = convertErrorCode(errorCode);
+      console.log(errorCode);
+    }
   }
-  get isCurrentUser(): any {
+
+  //store:getter
+  get isSignin(): User | undefined {
     if (this.$store.getters.currentUser) {
       return this.$store.getters.currentUser;
     }
@@ -60,10 +64,10 @@ export default class SigninView extends Vue {
   async mounted() {
     //ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
-      if (!this.isCurrentUser) {
+      if (!this.isSignin) {
         return false;
       }
-      if (this.isCurrentUser) {
+      if (this.isSignin) {
         this.$router.push("/vote");
       }
     });
