@@ -72,6 +72,8 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import Chart from "@/components/Chart.vue";
 import { User } from "../types/User";
 import { getAuth, signOut } from "firebase/auth";
+import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
+import db from "../firebase/firestore";
 
 @Component({
   components: {
@@ -87,6 +89,9 @@ export default class AdminViewComponent extends Vue {
   ];
 
   navNum: number = 0;
+
+  chartData = new Array();
+
   chartData1 = {
     labels: ["A", "B", "C", "D"],
     datasets: [
@@ -111,8 +116,22 @@ export default class AdminViewComponent extends Vue {
     responsive: true,
     maintainAspectRatio: false,
   };
+  async getPlans() {
+    const citiesRef = collection(db, "plans");
+    const querySnapshot = await getDocs(citiesRef);
+    this.chartData = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const plan = {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        created_at: data.created_at,
+        updated_at: data.update_at,
+      };
+      return plan;
+    });
+  }
 
-  //関数
   changeNav(num: number) {
     this.navNum = num;
     console.log(this.navNum);
@@ -123,6 +142,7 @@ export default class AdminViewComponent extends Vue {
     }
   }
   async mounted() {
+    //ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isCurrentUser) {
         return false;
@@ -131,6 +151,7 @@ export default class AdminViewComponent extends Vue {
         this.$router.push("/vote");
       }
     });
+    //データ取得
   }
 }
 </script>
