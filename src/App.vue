@@ -1,14 +1,16 @@
 <template>
   <v-app v-if="isAuth">
     <v-app-bar app color="primary" dark>
-      <div class="d-flex align-center">
-        <v-img alt="Vuetify Logo" class="shrink mr-2" contain src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png" transition="scale-transition" width="40" />
+      <router-link to="/" class="">
+        <div class="d-flex align-center">
+          <v-img alt="Vuetify Logo" class="shrink mr-2" contain src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png" transition="scale-transition" width="40" />
 
-        <v-img alt="Vuetify Name" class="shrink mt-1 hidden-sm-and-down" contain min-width="100" src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png" width="100" />
-      </div>
+          <v-img alt="Vuetify Name" class="shrink mt-1 hidden-sm-and-down" contain min-width="100" src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png" width="100" />
+        </div>
+      </router-link>
 
       <v-spacer></v-spacer>
-      <v-btn text v-if="isCurrentUser">{{ isCurrentUser.name }}</v-btn>
+      <v-btn text v-if="auth.currentUser">{{ isCurrentUser.name }}</v-btn>
       <v-btn v-if="auth.currentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
     </v-app-bar>
     <v-main>
