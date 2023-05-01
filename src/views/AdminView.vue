@@ -1,7 +1,7 @@
 <template>
   <div class="admin">
     <v-card-title>
-      <h1 class="display-1">会員登録</h1>
+      <h1 class="display-1">管理画面</h1>
     </v-card-title>
     <div class="layout">
       <nav class="layout__nav"></nav>
@@ -27,7 +27,7 @@
         </v-navigation-drawer>
       </v-card>
       <div class="layout__chart">
-        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><Chart v-if="isShow" :chartData="chartData1" :options="options" /></div>
+        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><Chart v-if="isShow" :chartData="chartData" :options="options" /></div>
       </div>
     </div>
   </div>
@@ -71,7 +71,7 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import Chart from "@/components/Chart.vue";
 import { User } from "../types/User";
 import { getAuth, signOut } from "firebase/auth";
-import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
+import { collection, getDocs, runTransaction, doc, query, orderBy } from "firebase/firestore";
 import db from "../firebase/firestore";
 
 @Component({
@@ -82,56 +82,22 @@ import db from "../firebase/firestore";
 export default class AdminViewComponent extends Vue {
   //変数
 
-  navItems = [
-    { title: "overview", icon: "mdi-notification-clear-all" },
-    { title: "votetotal", icon: "mdi-vote" },
-  ];
+  navItems = [{ title: "overview", icon: "mdi-notification-clear-all" }];
 
   navNum: number = 0;
 
-  planTotalData = new Array();
-
   isShow: boolean = false;
 
-  planList = [
-    {
-      title: "A",
-      count: 0,
-    },
-    {
-      title: "B",
-      count: 0,
-    },
-    {
-      title: "C",
-      count: 0,
-    },
-    {
-      title: "D",
-      count: 0,
-    },
-  ];
-
-  chartLavel = ["A", "B", "C", "D"];
+  planList = new Array();
+  chartLabel = new Array();
   chartTotal = new Array();
-  chartTotal2 = new Array();
 
-  chartData1 = {
-    labels: this.chartLavel,
+  chartData = {
+    labels: this.chartLabel,
     datasets: [
       {
         label: "投票数",
         data: this.chartTotal,
-        backgroundColor: "lightblue",
-      },
-    ],
-  };
-  chartData2 = {
-    labels: ["A", "B", "C", "D"],
-    datasets: [
-      {
-        label: "投票数",
-        data: [20, 30, 40, 55],
         backgroundColor: "lightblue",
       },
     ],
@@ -142,7 +108,22 @@ export default class AdminViewComponent extends Vue {
   };
 
   async getPublicVotes() {
-    //dbからデータ取得
+    //dbからプランを取得
+    const plansRef = query(collection(db, "plans"), orderBy("title", "asc"));
+    const planQuerySnapshot = await getDocs(plansRef);
+    this.planList = planQuerySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const planTitle = { title: data.title, count: 0 };
+      console.log(planTitle);
+      return planTitle;
+    });
+
+    //chartLabelに代入
+    for (let i = 0; i < this.planList.length; i++) {
+      this.chartLabel[i] = this.planList[i].title;
+    }
+
+    //dbから投票データ取得
     const publicVotesRef = collection(db, "public_votes");
     const querySnapshot = await getDocs(publicVotesRef);
     const planTitleTotal = querySnapshot.docs.map((doc) => {
