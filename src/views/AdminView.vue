@@ -27,8 +27,7 @@
         </v-navigation-drawer>
       </v-card>
       <div class="layout__chart">
-        <div class="chartWrap" v-bind:class="{ isActive: navNum === 0 }"><Chart :chartData="chartData1" :options="options" /></div>
-        <div class="chartWrap" v-bind:class="{ isActive: navNum === 1 }"><Chart :chartData="chartData2" :options="options" /></div>
+        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><Chart v-if="isShow" :chartData="chartData1" :options="options" /></div>
       </div>
     </div>
   </div>
@@ -90,14 +89,39 @@ export default class AdminViewComponent extends Vue {
 
   navNum: number = 0;
 
-  chartData = new Array();
+  planTotalData = new Array();
+
+  isShow: boolean = false;
+
+  planList = [
+    {
+      title: "A",
+      count: 0,
+    },
+    {
+      title: "B",
+      count: 0,
+    },
+    {
+      title: "C",
+      count: 0,
+    },
+    {
+      title: "D",
+      count: 0,
+    },
+  ];
+
+  chartLavel = ["A", "B", "C", "D"];
+  chartTotal = new Array();
+  chartTotal2 = new Array();
 
   chartData1 = {
-    labels: ["A", "B", "C", "D"],
+    labels: this.chartLavel,
     datasets: [
       {
         label: "投票数",
-        data: [95, 70, 80, 65],
+        data: this.chartTotal,
         backgroundColor: "lightblue",
       },
     ],
@@ -116,20 +140,32 @@ export default class AdminViewComponent extends Vue {
     responsive: true,
     maintainAspectRatio: false,
   };
-  async getPlans() {
-    const citiesRef = collection(db, "plans");
-    const querySnapshot = await getDocs(citiesRef);
-    this.chartData = querySnapshot.docs.map((doc) => {
+
+  async getPublicVotes() {
+    //dbからデータ取得
+    const publicVotesRef = collection(db, "public_votes");
+    const querySnapshot = await getDocs(publicVotesRef);
+    const planTitleTotal = querySnapshot.docs.map((doc) => {
       const data = doc.data();
-      const plan = {
-        id: doc.id,
-        title: data.title,
-        description: data.description,
-        created_at: data.created_at,
-        updated_at: data.update_at,
-      };
-      return plan;
+      const planTitleTotal = data.plans_title;
+      return planTitleTotal;
     });
+
+    //planデータを整形
+    planTitleTotal.map((item, index) => {
+      for (let i = 0; i < this.planList.length; i++) {
+        if (item === this.planList[i].title) {
+          this.planList[i].count += 1;
+        }
+      }
+    });
+
+    //chartTotalに挿入
+    for (let i = 0; i < this.planList.length; i++) {
+      this.chartTotal[i] = this.planList[i].count;
+    }
+    console.log(this.chartTotal);
+    this.isShow = true;
   }
 
   changeNav(num: number) {
@@ -143,15 +179,17 @@ export default class AdminViewComponent extends Vue {
   }
   async mounted() {
     //ユーザーの権限判定
-    getAuth().onAuthStateChanged(() => {
-      if (!this.isCurrentUser) {
-        return false;
-      }
-      if (this.isCurrentUser.role !== 0) {
-        this.$router.push("/vote");
-      }
-    });
+    // getAuth().onAuthStateChanged(() => {
+    //   if (!this.isCurrentUser) {
+    //     return false;
+    //   }
+    //   if (this.isCurrentUser.role !== 0) {
+    //     this.$router.push("/vote");
+    //   }
+    // });
     //データ取得
+    this.getPublicVotes();
+    // 子コンポーネントのメソッドを実行する
   }
 }
 </script>
