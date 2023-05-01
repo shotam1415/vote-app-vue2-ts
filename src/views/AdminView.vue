@@ -1,5 +1,5 @@
 <template>
-  <div class="admin">
+  <div class="admin" v-if="isCurrentUser?.role === 0">
     <v-card-title>
       <h1 class="display-1">管理画面</h1>
     </v-card-title>
@@ -158,16 +158,26 @@ export default class AdminViewComponent extends Vue {
       return this.$store.getters.currentUser;
     }
   }
+  @Watch("isCurrentUser")
+  onChangeLoadingStatus() {
+    if (!this.isCurrentUser) {
+      return false;
+    }
+    if (this.isCurrentUser.role !== 0) {
+      this.$router.push("/vote");
+    }
+  }
+
   async mounted() {
     //ユーザーの権限判定
-    // getAuth().onAuthStateChanged(() => {
-    //   if (!this.isCurrentUser) {
-    //     return false;
-    //   }
-    //   if (this.isCurrentUser.role !== 0) {
-    //     this.$router.push("/vote");
-    //   }
-    // });
+    getAuth().onAuthStateChanged(() => {
+      if (!this.isCurrentUser) {
+        return false;
+      }
+      if (this.isCurrentUser.role !== 0) {
+        this.$router.push("/vote");
+      }
+    });
     //データ取得
     this.getPublicVotes();
     // 子コンポーネントのメソッドを実行する

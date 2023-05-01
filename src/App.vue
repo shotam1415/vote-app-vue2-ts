@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app v-if="isAuth">
     <v-app-bar app color="primary" dark>
       <div class="d-flex align-center">
         <v-img alt="Vuetify Logo" class="shrink mr-2" contain src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png" transition="scale-transition" width="40" />
@@ -50,8 +50,10 @@ export default class AppComponent extends Vue {
         const CurrentUser = userSnap.data();
         CurrentUser.id = user_id;
         this.$store.commit("setCurrentUser", CurrentUser);
+        this.$store.commit("setIsAuth", true);
       } else {
         console.log("No such document!");
+        this.$store.commit("setIsAuth", true);
       }
     }
   }
@@ -59,6 +61,12 @@ export default class AppComponent extends Vue {
   get isCurrentUser(): any {
     if (this.$store.getters.currentUser) {
       return this.$store.getters.currentUser;
+    }
+  }
+
+  get isAuth(): any {
+    if (this.$store.getters.isAuth) {
+      return this.$store.getters.isAuth;
     }
   }
 
