@@ -3,6 +3,7 @@
     <v-container>
       <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
       <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
+      <v-alert v-show="warningMessage" type="warning">{{ warningMessage }}<router-link to="/signup">こちらより</router-link>会員登録をお願いします。</v-alert>
       <v-row :justify="justifycontent.center">
         <v-col
           cols="5"
@@ -69,6 +70,7 @@ import { User } from "../types/User";
 export default class VoteViewComponent extends Vue {
   successMessage: string = "";
   errorMessage: string = "";
+  warningMessage: string = "";
   isVoting: boolean = false;
   isChosePlan = {
     id: "",
@@ -106,6 +108,8 @@ export default class VoteViewComponent extends Vue {
     }
     this.isVoting = true;
     if (!this.isCurrentUser) {
+      this.warningMessage = "投票するには会員登録が必要です。";
+      this.isVoting = false;
       return false;
     }
 
