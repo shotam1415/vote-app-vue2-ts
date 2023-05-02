@@ -10,11 +10,11 @@
           v-for="plan in plans"
           :key="plan.title"
           @click="
-            isChosePlan.id = plan.id;
-            isChosePlan.title = plan.title;
+            selectedPlan.id = plan.id;
+            selectedPlan.title = plan.title;
           "
         >
-          <div :class="{ isPlanActive: isChosePlan.id === plan.id }" class="isPlan">
+          <div :class="{ isPlanActive: selectedPlan.id === plan.id }" class="isPlan">
             <v-card class="mx-auto" max-width="344">
               <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
               <v-card-title>{{ plan.title }}</v-card-title>
@@ -25,7 +25,7 @@
       </v-row>
     </v-container>
     <div class="btnWrap">
-      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!isChosePlan.id || isVoting" @click="postVote">投票する</v-btn>
+      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!selectedPlan.id || isVoting" @click="insertVote">投票する</v-btn>
     </div>
     <div class="note">
       <p>Cardのサムネイルに使用している画像の引用先</p>
@@ -60,108 +60,117 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import { collection, getDocs, runTransaction, doc } from 'firebase/firestore'
-import db from '../firebase/firestore'
-import { Plan } from '../types/Plan'
-import { User } from '../types/User'
+import { Vue, Component } from "vue-property-decorator";
+import { Transaction } from "firebase/firestore";
+import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
+import db from "../firebase/firestore";
+import { Plan } from "../types/Plan";
+import { User } from "../types/User";
 
-@Component({})
+@Component
 export default class VoteViewComponent extends Vue {
-  successMessage = ''
-  errorMessage = ''
-  warningMessage = ''
-  isVoting = false
-  isChosePlan = {
-    id: '',
-    title: ''
-  }
-
-  mounted () {
-    console.log(this.getPlans())
-  }
+  //変数
+  successMessage = "";
+  errorMessage = "";
+  warningMessage = "";
+  isVoting = false;
+  selectedPlan = {
+    id: "",
+    title: "",
+  };
 
   justifycontent = {
-    center: 'center'
-  }
+    center: "center",
+  };
+  plans: Plan[] = [];
 
-  plans: Plan[] = []
-  async getPlans () {
-    const citiesRef = collection(db, 'plans')
-    const querySnapshot = await getDocs(citiesRef)
-    this.plans = querySnapshot.docs.map((doc) => {
-      const data = doc.data()
+  async getPlans() {
+    const planRef = collection(db, "plans");
+    const planQuerySnapshot = await getDocs(planRef);
+    this.plans = planQuerySnapshot.docs.map((doc) => {
+      const data = doc.data();
       const plan: Plan = {
         id: doc.id,
         title: data.title,
         description: data.description,
         created_at: data.created_at,
-        updated_at: data.update_at
-      }
-      return plan
-    })
+        updated_at: data.update_at,
+      };
+      return plan;
+    });
   }
 
-  async postVote () {
-    if (this.isVoting) {
-      return false
-    }
-    this.isVoting = true
-    if (!this.isCurrentUser) {
-      this.warningMessage = '投票するには会員登録が必要です。'
-      this.isVoting = false
-      return false
-    }
+  async insertUsersVote(planTitle: string, user_id: string, transaction: Transaction) {
+    const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
+    const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
+    const usersVotesRef = doc(usersVotesCollectionPathDoc, this.selectedPlan.id);
+    transaction.set(usersVotesRef, {
+      plans_title: this.selectedPlan.title,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+  }
 
-    const user_id = this.isCurrentUser.id
-    const user_name = this.isCurrentUser.name
-    const public_vote_id_object = {
-      plans_title: this.isChosePlan.title,
+  async insertPublicVote(user_name: string, transaction: Transaction) {
+    const votesPath = collection(db, "public_votes");
+    const votesRef = doc(votesPath, this.selectedPlan.id);
+    transaction.set(votesRef, {
+      plans_title: this.selectedPlan.title,
       users_name: user_name,
       created_at: new Date(),
-      updated_at: new Date()
+      updated_at: new Date(),
+    });
+  }
+
+  async isUsersVotes(user_id: string) {
+    const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
+    const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
+    const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
+    return usersVotesSnapshot.empty;
+  }
+
+  async insertVote() {
+    if (this.isVoting) {
+      return false;
+    }
+    this.isVoting = true;
+    if (!this.isCurrentUser) {
+      this.warningMessage = "投票するには会員登録が必要です。";
+      this.isVoting = false;
+      return false;
     }
 
-    const user_vote_id_object = {
-      plans_title: this.isChosePlan.title,
-      created_at: new Date(),
-      updated_at: new Date()
-    }
-    const usersVotesCollectionPath = `users/${user_id}/users_votes/`
-    const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath)
-    const votesPath = collection(db, 'public_votes')
-    const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc)
-    const isUsersVotesCollection = usersVotesSnapshot.empty
-
+    const user_id = this.isCurrentUser.id;
+    const user_name = this.isCurrentUser.name;
+    const isUsersVotesCollection = this.isUsersVotes(user_id);
     // データ挿入
     if (!isUsersVotesCollection) {
-      this.errorMessage = '既に投票すみです。'
-      this.isVoting = false
-      return false
+      this.errorMessage = "既に投票すみです。";
+      this.isVoting = false;
+      return false;
     }
     try {
       await runTransaction(db, async (transaction) => {
-        const usersVotesRef = doc(usersVotesCollectionPathDoc, this.isChosePlan.id)
-        const votesRef = doc(votesPath, this.isChosePlan.id)
-
         // 両方のドキュメントをトランザクション内で追加
-        transaction.set(usersVotesRef, user_vote_id_object)
-        transaction.set(votesRef, public_vote_id_object)
-        console.log('Transaction successful')
-        this.successMessage = '投票が完了しました。'
-        this.isVoting = false
-      })
+        this.insertUsersVote(this.selectedPlan.title, user_id, transaction);
+        this.insertPublicVote(user_name, transaction);
+        console.log("Transaction successful");
+        this.successMessage = "投票が完了しました。";
+        this.isVoting = false;
+      });
     } catch (error) {
       // 片方の処理がエラーだった場合
-      console.error('Transaction failed: ', error)
-      this.isVoting = false
+      console.error("Transaction failed: ", error);
+      this.isVoting = false;
     }
   }
-
-  get isCurrentUser (): User | undefined {
+  get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser
+      return this.$store.getters.currentUser;
     }
+  }
+  mounted() {
+    this.getPlans();
   }
 }
 </script>

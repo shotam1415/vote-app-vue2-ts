@@ -68,7 +68,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import Chart from "@/components/Chart.vue";
+import ChartComponents from "@/components/ChartComponents.vue";
 import { User } from "../types/User";
 import { getAuth, signOut } from "firebase/auth";
 import { collection, getDocs, runTransaction, doc, query, orderBy } from "firebase/firestore";
@@ -76,7 +76,7 @@ import db from "../firebase/firestore";
 
 @Component({
   components: {
-    Chart,
+    ChartComponents,
   },
 })
 export default class AdminViewComponent extends Vue {
