@@ -80,17 +80,17 @@ import db from "../firebase/firestore";
   },
 })
 export default class AdminViewComponent extends Vue {
-  //変数
+  // 変数
 
   navItems = [{ title: "overview", icon: "mdi-notification-clear-all" }];
 
-  navNum: number = 0;
+  navNum = 0;
 
-  isShow: boolean = false;
+  isShow = false;
 
-  planList = new Array();
-  chartLabel = new Array();
-  chartTotal = new Array();
+  planList: any = [{}];
+  chartLabel: any = [];
+  chartTotal: any = [];
 
   chartData = {
     labels: this.chartLabel,
@@ -102,13 +102,14 @@ export default class AdminViewComponent extends Vue {
       },
     ],
   };
+
   options = {
     responsive: true,
     maintainAspectRatio: false,
   };
 
   async getPublicVotes() {
-    //dbからプランを取得
+    // dbからプランを取得
     const plansRef = query(collection(db, "plans"), orderBy("title", "asc"));
     const planQuerySnapshot = await getDocs(plansRef);
     this.planList = planQuerySnapshot.docs.map((doc) => {
@@ -118,12 +119,12 @@ export default class AdminViewComponent extends Vue {
       return planTitle;
     });
 
-    //chartLabelに代入
+    // chartLabelに代入
     for (let i = 0; i < this.planList.length; i++) {
       this.chartLabel[i] = this.planList[i].title;
     }
 
-    //dbから投票データ取得
+    // dbから投票データ取得
     const publicVotesRef = collection(db, "public_votes");
     const querySnapshot = await getDocs(publicVotesRef);
     const planTitleTotal = querySnapshot.docs.map((doc) => {
@@ -132,7 +133,7 @@ export default class AdminViewComponent extends Vue {
       return planTitleTotal;
     });
 
-    //planデータを整形
+    // planデータを整形
     planTitleTotal.map((item, index) => {
       for (let i = 0; i < this.planList.length; i++) {
         if (item === this.planList[i].title) {
@@ -141,7 +142,7 @@ export default class AdminViewComponent extends Vue {
       }
     });
 
-    //chartTotalに挿入
+    // chartTotalに挿入
     for (let i = 0; i < this.planList.length; i++) {
       this.chartTotal[i] = this.planList[i].count;
     }
@@ -153,11 +154,13 @@ export default class AdminViewComponent extends Vue {
     this.navNum = num;
     console.log(this.navNum);
   }
+
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
       return this.$store.getters.currentUser;
     }
   }
+
   @Watch("isCurrentUser")
   onChangeLoadingStatus() {
     if (!this.isCurrentUser) {
@@ -169,13 +172,13 @@ export default class AdminViewComponent extends Vue {
   }
 
   async mounted() {
-    //ユーザーの権限判定
+    // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isCurrentUser || this.isCurrentUser.role !== 0) {
         this.$router.push("/vote");
       }
     });
-    //データ取得
+    // データ取得
     this.getPublicVotes();
     // 子コンポーネントのメソッドを実行する
   }

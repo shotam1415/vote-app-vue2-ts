@@ -26,10 +26,10 @@ import { User } from "./types/User";
 
 @Component
 export default class AppComponent extends Vue {
-  //変数
+  // 変数
   private auth = getAuth();
 
-  //methods
+  // methods
   async signOutEvent() {
     try {
       await signOut(this.auth);
@@ -39,15 +39,16 @@ export default class AppComponent extends Vue {
       console.error(error);
     }
   }
+
   async getCurrentUser() {
-    const user_id = this.auth.currentUser?.uid;
-    if (user_id) {
-      const usersRef = doc(db, "users", user_id);
+    const userId = this.auth.currentUser?.uid;
+    if (userId) {
+      const usersRef = doc(db, "users", userId);
       const userSnap = await getDoc(usersRef);
       if (userSnap.exists()) {
         console.log("Document data:", userSnap.data());
         const CurrentUser = userSnap.data();
-        CurrentUser.id = user_id;
+        CurrentUser.id = userId;
         this.$store.commit("setCurrentUser", CurrentUser);
         this.$store.commit("setIsAuth", true);
       } else {
@@ -58,12 +59,13 @@ export default class AppComponent extends Vue {
     }
   }
 
-  //store:getter
+  // store:getter
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
       return this.$store.getters.currentUser;
     }
   }
+
   get isAuth(): boolean | undefined {
     if (this.$store.getters.isAuth) {
       return this.$store.getters.isAuth;

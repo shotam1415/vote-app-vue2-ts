@@ -27,62 +27,63 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { collection, setDoc, doc } from "firebase/firestore";
-import db from "../firebase/firestore";
-import { convertErrorCode } from "../lib/convertErrorCode";
+import { Component, Vue } from 'vue-property-decorator'
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
+import { setDoc, doc } from 'firebase/firestore'
+import db from '../firebase/firestore'
+import { convertErrorCode } from '../lib/convertErrorCode'
 @Component
 export default class SigninView extends Vue {
-  showPassword: boolean = false;
-  name: string = "";
-  email: string = "";
-  password: string = "";
-  errorMessage: string | undefined = "";
+  showPassword = false
+  name = ''
+  email = ''
+  password = ''
+  errorMessage: string | undefined = ''
 
-  signup() {
-    //Todo ボタン２度押しされないようにする
-    const auth = getAuth(); //Todo 後で消す
+  signup () {
+    // Todo ボタン２度押しされないようにする
+    const auth = getAuth() // Todo 後で消す
     createUserWithEmailAndPassword(auth, this.email, this.password)
       .then(async (userCredential) => {
-        const user = userCredential.user;
+        const user = userCredential.user
         const userIdObject = {
           name: this.name,
           email: this.email,
           role: 1,
           created_at: new Date(),
-          update_at: new Date(),
-        };
-        const usersRef = doc(db, "users", user.uid);
-        const docRef = await setDoc(usersRef, userIdObject);
-        console.log(docRef);
+          update_at: new Date()
+        }
+        const usersRef = doc(db, 'users', user.uid)
+        const docRef = await setDoc(usersRef, userIdObject)
+        console.log(docRef)
       })
       .then(() => {
-        console.log("success");
-        this.$router.push("/vote");
+        console.log('success')
+        this.$router.push('/vote')
       })
       .catch((error) => {
-        const errorCode = error.code;
-        this.errorMessage = convertErrorCode(errorCode);
-        console.log(errorCode);
-      });
+        const errorCode = error.code
+        this.errorMessage = convertErrorCode(errorCode)
+        console.log(errorCode)
+      })
   }
-  get isCurrentUser(): any {
+
+  get isCurrentUser (): any {
     if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser;
+      return this.$store.getters.currentUser
     }
   }
 
-  async mounted() {
-    //ユーザーの権限判定
+  async mounted () {
+    // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isCurrentUser) {
-        return false;
+        return false
       }
       if (this.isCurrentUser) {
-        this.$router.push("/vote");
+        this.$router.push('/vote')
       }
-    });
+    })
   }
 }
 </script>

@@ -8,18 +8,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit } from "vue-property-decorator";
+import { Component, Prop, Vue, Emit } from 'vue-property-decorator'
 
 @Component
 export default class HelloWorld extends Vue {
-  name2: string = "taro";
+  name2 = 'taro'
 
   @Prop({ type: String, required: true })
-  msg: string | undefined;
+    msg: string | undefined
 
-  @Emit("changeMsg")
-  changeMsg(): void {
-    this.name2 = "jiro";
+  @Emit('changeMsg')
+  changeMsg (): void {
+    this.name2 = 'jiro'
   }
 }
 </script>
