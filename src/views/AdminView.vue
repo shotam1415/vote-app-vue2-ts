@@ -27,7 +27,7 @@
         </v-navigation-drawer>
       </v-card>
       <div class="layout__chart">
-        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><Chart v-if="isShow" :chartData="chartData" :options="options" /></div>
+        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponets v-if="isShow" :chartData="chartData" :options="options" /></div>
       </div>
     </div>
   </div>
@@ -67,12 +67,17 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import ChartComponets from "@/components/ChartComponets.vue";
 import { User } from "../types/User";
-import { getAuth, signOut } from "firebase/auth";
-import { collection, getDocs, runTransaction, doc, query, orderBy } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import db from "../firebase/firestore";
+
+type plans = {
+  title: string;
+  count: number;
+};
 
 @Component({
   components: {
@@ -81,16 +86,14 @@ import db from "../firebase/firestore";
 })
 export default class AdminViewComponent extends Vue {
   // 変数
-
   navItems = [{ title: "overview", icon: "mdi-notification-clear-all" }];
-
   navNum = 0;
 
   isShow = false;
 
-  planList: any = [{}];
-  chartLabel: any = [];
-  chartTotal: any = [];
+  plans: plans[] = [];
+  chartLabel: string[] = [];
+  chartTotal: number[] = [];
 
   chartData = {
     labels: this.chartLabel,
@@ -108,45 +111,51 @@ export default class AdminViewComponent extends Vue {
     maintainAspectRatio: false,
   };
 
-  async getPublicVotes() {
-    // dbからプランを取得
+  async getPlans() {
     const plansRef = query(collection(db, "plans"), orderBy("title", "asc"));
-    const planQuerySnapshot = await getDocs(plansRef);
-    this.planList = planQuerySnapshot.docs.map((doc) => {
+    const plansSnapshot = await getDocs(plansRef);
+    const plans = plansSnapshot.docs.map((doc) => {
       const data = doc.data();
       const planTitle = { title: data.title, count: 0 };
       console.log(planTitle);
       return planTitle;
     });
+    return plans;
+  }
 
-    // chartLabelに代入
-    for (let i = 0; i < this.planList.length; i++) {
-      this.chartLabel[i] = this.planList[i].title;
-    }
-
-    // dbから投票データ取得
+  async getPublicVotedTitleList() {
     const publicVotesRef = collection(db, "public_votes");
-    const querySnapshot = await getDocs(publicVotesRef);
-    const planTitleTotal = querySnapshot.docs.map((doc) => {
+    const publicVotesSnapshot = await getDocs(publicVotesRef);
+    const publicVotedTitleList = publicVotesSnapshot.docs.map((doc) => {
       const data = doc.data();
-      const planTitleTotal = data.plans_title;
-      return planTitleTotal;
+      const votedPlanTitle = data.plans_title;
+      return votedPlanTitle;
     });
-
-    // planデータを整形
-    planTitleTotal.map((item, index) => {
-      for (let i = 0; i < this.planList.length; i++) {
-        if (item === this.planList[i].title) {
-          this.planList[i].count += 1;
+    publicVotedTitleList.map((item) => {
+      for (let i = 0; i < this.plans.length; i++) {
+        if (item === this.plans[i].title) {
+          this.plans[i].count += 1;
         }
       }
     });
+  }
+
+  async getVotedChartData() {
+    // dbからプランを取得
+    this.plans = await this.getPlans();
+
+    // chartLabelに代入
+    for (let i = 0; i < this.plans.length; i++) {
+      this.chartLabel[i] = this.plans[i].title;
+    }
+
+    // dbから投票データ取得し、planを整形
+    await this.getPublicVotedTitleList();
 
     // chartTotalに挿入
-    for (let i = 0; i < this.planList.length; i++) {
-      this.chartTotal[i] = this.planList[i].count;
+    for (let i = 0; i < this.plans.length; i++) {
+      this.chartTotal[i] = this.plans[i].count;
     }
-    console.log(this.chartTotal);
     this.isShow = true;
   }
 
@@ -179,8 +188,7 @@ export default class AdminViewComponent extends Vue {
       }
     });
     // データ取得
-    this.getPublicVotes();
-    // 子コンポーネントのメソッドを実行する
+    this.getVotedChartData();
   }
 }
 </script>
