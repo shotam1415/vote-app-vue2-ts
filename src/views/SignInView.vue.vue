@@ -16,7 +16,7 @@
             v-model="password"
           />
           <v-card-actions>
-            <v-btn @click="signin">ログイン</v-btn>
+            <v-btn v-bind:loading="isSignin" v-bind:disabled="isSignin" @click="signin">ログイン</v-btn>
             <router-link to="/signup" class=""><v-btn color="blue lighten-2" text>会員登録はこちら </v-btn></router-link>
           </v-card-actions>
         </v-form>
@@ -26,51 +26,56 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
-import { convertErrorCode } from '../lib/convertErrorCode'
-import { User } from '../types/User'
+import { Component, Vue } from "vue-property-decorator";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { convertErrorCode } from "../lib/convertErrorCode";
+import { User } from "../types/User";
 
 @Component
 export default class SigninView extends Vue {
   // 変数
-  showPassword = false
-  email = ''
-  password = ''
-  errorMessage: string | undefined = ''
+  showPassword = false;
+  email = "";
+  password = "";
+  errorMessage: string | undefined = "";
+  isLoading = false;
 
   // methods
-  async signin () {
+  async signin() {
+    // Todo ボタン２度押しされないようにする
+    this.isLoading = true;
     try {
-      const auth = getAuth()
-      const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password)
-      const user = userCredential.user
-      console.log(user)
-      this.$router.push('/vote')
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(auth, this.email, this.password);
+      const user = userCredential.user;
+      console.log(user);
+      this.$router.push("/vote");
+      this.isLoading = false;
     } catch (error: any) {
-      const errorCode = error.code
-      this.errorMessage = convertErrorCode(errorCode)
-      console.log(errorCode)
+      const errorCode = error.code;
+      this.errorMessage = convertErrorCode(errorCode);
+      console.log(errorCode);
+      this.isLoading = false;
     }
   }
 
   // store:getter
-  get isSignin (): User | undefined {
+  get isSignin(): User | undefined {
     if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser
+      return this.$store.getters.currentUser;
     }
   }
 
-  async mounted () {
+  async mounted() {
     // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isSignin) {
-        return false
+        return false;
       }
       if (this.isSignin) {
-        this.$router.push('/vote')
+        this.$router.push("/vote");
       }
-    })
+    });
   }
 }
 </script>
