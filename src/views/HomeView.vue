@@ -40,7 +40,6 @@
 import { Component, Vue } from "vue-property-decorator";
 import HelloWorld from "@/components/HelloWorld.vue";
 import { User } from "../types/User";
-import { getAuth, signOut } from "firebase/auth";
 
 @Component({
   components: {
@@ -53,6 +52,5 @@ export default class HomeView extends Vue {
       return this.$store.getters.currentUser;
     }
   }
-  async mounted() {}
 }
 </script>

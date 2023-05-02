@@ -4,14 +4,12 @@
       <router-link to="/" class="">
         <div class="d-flex align-center">
           <v-img alt="Vuetify Logo" class="shrink mr-2" contain src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png" transition="scale-transition" width="40" />
-
           <v-img alt="Vuetify Name" class="shrink mt-1 hidden-sm-and-down" contain min-width="100" src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png" width="100" />
         </div>
       </router-link>
-
       <v-spacer></v-spacer>
-      <v-btn text v-if="auth.currentUser">{{ isCurrentUser.name }}</v-btn>
-      <v-btn v-if="auth.currentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
+      <v-btn text v-if="isCurrentUser">{{ isCurrentUser.name }}</v-btn>
+      <v-btn v-if="isCurrentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
     </v-app-bar>
     <v-main>
       <router-view />
@@ -19,42 +17,41 @@
   </v-app>
 </template>
 
-<style lang="scss"></style>
-
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import { Vue, Component } from "vue-property-decorator";
 import { getAuth, signOut } from "firebase/auth";
 import { getDoc, doc } from "@firebase/firestore";
 import db from "./firebase/firestore";
+import { User } from "./types/User";
 
-@Component({})
+@Component
 export default class AppComponent extends Vue {
-  auth = getAuth();
+  // 変数
+  private auth = getAuth();
+
+  // methods
   async signOutEvent() {
-    signOut(this.auth)
-      .then(() => {
-        console.log("Sign-out successful.");
-        this.$router.push("/signin");
-      })
-      .catch((error) => {
-        console.log("An error happened.");
-        console.log(error);
-      });
+    try {
+      await signOut(this.auth);
+      this.$store.commit("setCurrentUser", null);
+      this.$router.push("/signin");
+    } catch (error) {
+      console.error(error);
+    }
   }
+
   async getCurrentUser() {
-    const auth = getAuth();
-    const user_id = auth.currentUser?.uid;
-    if (user_id) {
-      const usersRef = doc(db, "users", user_id);
+    const userId = this.auth.currentUser?.uid;
+    if (userId) {
+      const usersRef = doc(db, "users", userId);
       const userSnap = await getDoc(usersRef);
       if (userSnap.exists()) {
         console.log("Document data:", userSnap.data());
         const CurrentUser = userSnap.data();
-        CurrentUser.id = user_id;
+        CurrentUser.id = userId;
         this.$store.commit("setCurrentUser", CurrentUser);
         this.$store.commit("setIsAuth", true);
       } else {
-        console.log("No such document!");
         this.$store.commit("setIsAuth", true);
       }
     } else {
@@ -62,13 +59,14 @@ export default class AppComponent extends Vue {
     }
   }
 
-  get isCurrentUser(): any {
+  // store:getter
+  get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
       return this.$store.getters.currentUser;
     }
   }
 
-  get isAuth(): any {
+  get isAuth(): boolean | undefined {
     if (this.$store.getters.isAuth) {
       return this.$store.getters.isAuth;
     }
