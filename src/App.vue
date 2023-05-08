@@ -76,6 +76,7 @@ export default class AppComponent extends Vue {
     this.auth.onAuthStateChanged(() => {
       this.getCurrentUser();
     });
+    console.log("this");
     console.log(this.auth);
   }
 }
