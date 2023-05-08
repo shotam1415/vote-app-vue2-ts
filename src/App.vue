@@ -27,7 +27,7 @@ import { User } from "./types/User";
 @Component
 export default class AppComponent extends Vue {
   // 変数
-  private auth = getAuth();
+  auth = getAuth();
 
   // methods
   async signOutEvent() {
@@ -76,6 +76,8 @@ export default class AppComponent extends Vue {
     this.auth.onAuthStateChanged(() => {
       this.getCurrentUser();
     });
+    console.log("this");
+    console.log(this.auth);
   }
 }
 </script>
