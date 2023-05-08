@@ -1,24 +1,12 @@
-import { shallowMount } from "@vue/test-utils";
+import { createLocalVue, RouterLinkStub, shallowMount } from "@vue/test-utils";
 import AppComponent from "@/App.vue";
-import { getAuth, signOut, signInWithEmailAndPassword } from "firebase/auth";
-import "../../src/firebase/firebase";
 import Vuetify from "vuetify";
-import { createLocalVue, RouterLinkStub } from "@vue/test-utils";
 import VueRouter from "vue-router";
+import { getAuth } from "firebase/auth";
+import "../../src/firebase/firebase";
 
 jest.mock("firebase/auth", () => {
   const auth = {
-    updated_at: {
-      seconds: 1682953200,
-      nanoseconds: 541000000,
-    },
-    name: "admin",
-    email: "admin@sample.com",
-    created_at: {
-      seconds: 1682953200,
-      nanoseconds: 829000000,
-    },
-    role: 0,
     onAuthStateChanged: jest.fn(),
   };
 
@@ -54,14 +42,11 @@ describe("MyComponent.vue", () => {
 
       mocks: {
         $store: {
-          commit: jest.fn(),
-          getters: { isAuth: true },
+          getters: { isAuth: true, isCurrentUser: { name: "test太郎" } },
         },
-        // $router: {
-        //   push: jest.fn(),
-        // },
       },
     });
+    //リンク遷移のテスト
     expect(wrapper.findComponent(RouterLinkStub).props().to).toBe("/");
   });
 });
