@@ -71,7 +71,7 @@ import { User } from "../types/User";
 export default class VoteViewComponent extends Vue {
   //変数
   successMessage = "";
-  errorMessage = "";
+  errorMessage = "既に投票すみです。";
   warningMessage = "";
   isVoting = false;
   selectedPlan = {
@@ -100,7 +100,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
-  async insertUsersVote(planTitle: string, user_id: string, transaction: Transaction) {
+  async insertUsersVote(user_id: string, transaction: Transaction) {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
     const usersVotesRef = doc(usersVotesCollectionPathDoc, this.selectedPlan.id);
@@ -152,7 +152,7 @@ export default class VoteViewComponent extends Vue {
     try {
       await runTransaction(db, async (transaction) => {
         // 両方のドキュメントをトランザクション内で追加
-        this.insertUsersVote(this.selectedPlan.title, user_id, transaction);
+        this.insertUsersVote(user_id, transaction);
         this.insertPublicVote(user_name, transaction);
         console.log("Transaction successful");
         this.successMessage = "投票が完了しました。";
