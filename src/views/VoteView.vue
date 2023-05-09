@@ -66,22 +66,23 @@ import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 import { User } from "../types/User";
+import { async } from "@firebase/util";
 
 @Component
 export default class VoteViewComponent extends Vue {
   //変数
   successMessage = "";
-  errorMessage = "既に投票すみです。";
+  errorMessage = "";
   warningMessage = "";
   isVoting = false;
   selectedPlan = {
     id: "",
     title: "",
   };
-
   justifycontent = {
     center: "center",
   };
+  isUsersVotesCollection = false;
   plans: Plan[] = [];
 
   async getPlans() {
@@ -134,35 +135,33 @@ export default class VoteViewComponent extends Vue {
       return false;
     }
     this.isVoting = true;
+
     if (!this.isCurrentUser) {
       this.warningMessage = "投票するには会員登録が必要です。";
       this.isVoting = false;
       return false;
     }
 
-    const user_id = this.isCurrentUser.id;
-    const user_name = this.isCurrentUser.name;
-    const isUsersVotesCollection = this.isUsersVotes(user_id);
     // データ挿入
-    if (!isUsersVotesCollection) {
+    if (!this.isUsersVotesCollection) {
       this.errorMessage = "既に投票すみです。";
       this.isVoting = false;
       return false;
     }
-    try {
-      await runTransaction(db, async (transaction) => {
-        // 両方のドキュメントをトランザクション内で追加
-        this.insertUsersVote(user_id, transaction);
-        this.insertPublicVote(user_name, transaction);
-        console.log("Transaction successful");
-        this.successMessage = "投票が完了しました。";
-        this.isVoting = false;
-      });
-    } catch (error) {
-      // 片方の処理がエラーだった場合
-      console.error("Transaction failed: ", error);
-      this.isVoting = false;
-    }
+    // try {
+    //   await runTransaction(db, async (transaction) => {
+    //     // 両方のドキュメントをトランザクション内で追加
+    //     this.insertUsersVote(user_id, transaction);
+    //     this.insertPublicVote(user_name, transaction);
+    //     console.log("Transaction successful");
+    //     this.successMessage = "投票が完了しました。";
+    //     this.isVoting = false;
+    //   });
+    // } catch (error) {
+    //   // 片方の処理がエラーだった場合
+    //   console.error("Transaction failed: ", error);
+    //   this.isVoting = false;
+    // }
   }
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
@@ -171,6 +170,11 @@ export default class VoteViewComponent extends Vue {
   }
   mounted() {
     this.getPlans();
+    async () => {
+      if (this.isCurrentUser) {
+        this.isUsersVotesCollection = await this.isUsersVotes(this.isCurrentUser.id);
+      }
+    };
   }
 }
 </script>
