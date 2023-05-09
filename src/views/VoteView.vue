@@ -135,6 +135,7 @@ export default class VoteViewComponent extends Vue {
       return false;
     }
     this.isVoting = true;
+    this.successMessage = "投票が完了しました。";
 
     if (!this.isCurrentUser) {
       this.warningMessage = "投票するには会員登録が必要です。";
@@ -148,20 +149,24 @@ export default class VoteViewComponent extends Vue {
       this.isVoting = false;
       return false;
     }
-    // try {
-    //   await runTransaction(db, async (transaction) => {
-    //     // 両方のドキュメントをトランザクション内で追加
-    //     this.insertUsersVote(user_id, transaction);
-    //     this.insertPublicVote(user_name, transaction);
-    //     console.log("Transaction successful");
-    //     this.successMessage = "投票が完了しました。";
-    //     this.isVoting = false;
-    //   });
-    // } catch (error) {
-    //   // 片方の処理がエラーだった場合
-    //   console.error("Transaction failed: ", error);
-    //   this.isVoting = false;
-    // }
+
+    const user_id = this.isCurrentUser.id;
+    const user_name = this.isCurrentUser.name;
+    try {
+      await runTransaction(db, async (transaction) => {
+        // 両方のドキュメントをトランザクション内で追加
+        this.insertUsersVote(user_id, transaction);
+        this.insertPublicVote(user_name, transaction);
+        console.log("Transaction successful");
+        this.successMessage = "投票が完了しました。";
+        this.isUsersVotesCollection = true;
+        this.isVoting = false;
+      });
+    } catch (error) {
+      // 片方の処理がエラーだった場合
+      console.error("Transaction failed: ", error);
+      this.isVoting = false;
+    }
   }
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {

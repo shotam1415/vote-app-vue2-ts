@@ -30,9 +30,8 @@ const selectedPlan = {
 };
 
 describe("VoteView.vue", () => {
-  it("投票済みであれば、アラートが表示されるかどうか", async () => {
+  it("【失敗】投票済みであれば、アラートが表示されるかどうか", async () => {
     //投票済判定
-    // const isUsersVotes = jest.fn(() => false);
     const wrapper = shallowMount(VoteViewComponent, {
       localVue,
       vuetify,
@@ -59,7 +58,7 @@ describe("VoteView.vue", () => {
         .text()
     ).toBe("既に投票すみです。");
   });
-  it("未ログイン時、注意メッセージが表示される", async () => {
+  it("【失敗】未ログイン時、注意メッセージが表示される", async () => {
     //投票済判定
     const wrapper = shallowMount(VoteViewComponent, {
       localVue,
@@ -84,5 +83,37 @@ describe("VoteView.vue", () => {
         .at(0)
         .text()
     ).toBe("投票するには会員登録が必要です。こちらより会員登録をお願いします。");
+  });
+
+  it("【成功】ログイン中かつ初回の投稿の時", async () => {
+    //投票済判定
+    const wrapper = shallowMount(VoteViewComponent, {
+      localVue,
+      vuetify,
+      router,
+      propsData: {
+        selectedPlan,
+        isUsersVotesCollection,
+      },
+      store,
+      computed: {
+        isCurrentUser: () => null,
+      },
+    });
+
+    //投票するプランを選択
+    await wrapper.setData({ selectedPlan: selectedPlan });
+    await wrapper.setData({ isUsersVotesCollection: true });
+
+    const vm: any = wrapper.vm;
+    await vm.insertVote();
+
+    expect(
+      wrapper
+        .findAllComponents({ name: "v-alert" })
+        .filter((w) => w.attributes("type") == "success")
+        .at(0)
+        .text()
+    ).toBe("投票が完了しました。");
   });
 });
