@@ -61,8 +61,7 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { Transaction } from "firebase/firestore";
-import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
+import { collection, getDocs, runTransaction, doc, Transaction } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 import { User } from "../types/User";
@@ -78,14 +77,17 @@ export default class VoteViewComponent extends Vue {
     id: "",
     title: "",
   };
-
   justifycontent = {
     center: "center",
   };
+  isUsersVotesCollection = false;
   plans: Plan[] = [];
 
   async getPlans() {
     const planRef = collection(db, "plans");
+    console.log(db);
+
+    console.log(planRef);
     const planQuerySnapshot = await getDocs(planRef);
     this.plans = planQuerySnapshot.docs.map((doc) => {
       const data = doc.data();
@@ -100,7 +102,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
-  async insertUsersVote(planTitle: string, user_id: string, transaction: Transaction) {
+  async insertUsersVote(user_id: string, transaction: Transaction) {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
     const usersVotesRef = doc(usersVotesCollectionPathDoc, this.selectedPlan.id);
@@ -126,7 +128,9 @@ export default class VoteViewComponent extends Vue {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
     const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
-    return usersVotesSnapshot.empty;
+    console.log("thisaaa");
+    console.log(usersVotesSnapshot);
+    return !usersVotesSnapshot.empty;
   }
 
   async insertVote() {
@@ -134,28 +138,31 @@ export default class VoteViewComponent extends Vue {
       return false;
     }
     this.isVoting = true;
+
     if (!this.isCurrentUser) {
       this.warningMessage = "投票するには会員登録が必要です。";
       this.isVoting = false;
       return false;
     }
 
-    const user_id = this.isCurrentUser.id;
-    const user_name = this.isCurrentUser.name;
-    const isUsersVotesCollection = this.isUsersVotes(user_id);
     // データ挿入
-    if (!isUsersVotesCollection) {
+    if (this.isUsersVotesCollection) {
       this.errorMessage = "既に投票すみです。";
       this.isVoting = false;
       return false;
     }
+
+    const user_id = this.isCurrentUser.id;
+    const user_name = this.isCurrentUser.name;
+
     try {
       await runTransaction(db, async (transaction) => {
         // 両方のドキュメントをトランザクション内で追加
-        this.insertUsersVote(this.selectedPlan.title, user_id, transaction);
+        this.insertUsersVote(user_id, transaction);
         this.insertPublicVote(user_name, transaction);
         console.log("Transaction successful");
         this.successMessage = "投票が完了しました。";
+        this.isUsersVotesCollection = true;
         this.isVoting = false;
       });
     } catch (error) {
@@ -171,6 +178,12 @@ export default class VoteViewComponent extends Vue {
   }
   mounted() {
     this.getPlans();
+    const getIsUsersVotes = async () => {
+      if (this.isCurrentUser) {
+        this.isUsersVotesCollection = await this.isUsersVotes(this.isCurrentUser.id);
+      }
+    };
+    getIsUsersVotes();
   }
 }
 </script>
