@@ -3,26 +3,35 @@ import VoteViewComponent from "@/views/VoteView.vue";
 import Vuetify from "vuetify";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
+import "../../src/firebase/firebase";
 
 //vuetifyの警告回避
 const localVue = createLocalVue();
 localVue.use(VueRouter);
 const router = new VueRouter();
 let vuetify: any;
-beforeEach(() => {
-  vuetify = new Vuetify();
-});
 localVue.use(Vuex);
 let getters: any;
 let store: any;
 let isUsersVotesCollection: boolean;
+let successMessage: any;
 
 beforeEach(() => {
+  vuetify = new Vuetify();
   getters = {
     currentUser: () => null,
   };
   store = new Vuex.Store(getters);
 });
+
+jest.mock("firebase/firestore", () => ({
+  getFirestore: jest.fn(),
+  collection: jest.fn(),
+  getDocs: jest.fn(() => ""),
+  runTransaction: jest.fn(),
+  doc: jest.fn(),
+  Transaction: jest.fn(),
+}));
 
 //選んでいるプラン
 const selectedPlan = {
@@ -41,13 +50,21 @@ describe("VoteView.vue", () => {
         isUsersVotesCollection,
       },
       store,
+      methods: {
+        getPlans: jest.fn(),
+        insertUsersVote: jest.fn(),
+        insertPublicVote: jest.fn(),
+      },
       computed: {
         isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
       },
     });
 
-    //投票するプランを選択
+    //投票するプランの情報を入れる
+    await wrapper.setData({ isUsersVotesCollection: true });
     await wrapper.setData({ selectedPlan: selectedPlan });
+
+    //@clickで発火する関数の発火
     const vm: any = wrapper.vm;
     await vm.insertVote();
     expect(
@@ -69,10 +86,17 @@ describe("VoteView.vue", () => {
         isUsersVotesCollection,
       },
       store,
+      methods: {
+        getPlans: jest.fn(),
+        insertUsersVote: jest.fn(),
+        insertPublicVote: jest.fn(),
+      },
     });
 
-    //投票するプランを選択
+    //投票するプランの情報を入れる
     await wrapper.setData({ selectedPlan: selectedPlan });
+
+    //@clickで発火する関数の発火
     const vm: any = wrapper.vm;
     await vm.insertVote();
 
@@ -94,17 +118,27 @@ describe("VoteView.vue", () => {
       propsData: {
         selectedPlan,
         isUsersVotesCollection,
+        successMessage,
       },
       store,
       computed: {
-        isCurrentUser: () => null,
+        isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
+      },
+      methods: {
+        getPlans: jest.fn(),
+        insertUsersVote: jest.fn(),
+        insertPublicVote: jest.fn(),
       },
     });
 
     //投票するプランを選択
     await wrapper.setData({ selectedPlan: selectedPlan });
-    await wrapper.setData({ isUsersVotesCollection: true });
+    await wrapper.setData({ isUsersVotesCollection: false });
 
+    //擬似的にsuccessMessageを挿入
+    await wrapper.setData({ successMessage: "投票が完了しました。" });
+
+    //@clickで発火する関数の発火
     const vm: any = wrapper.vm;
     await vm.insertVote();
 

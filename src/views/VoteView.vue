@@ -61,12 +61,10 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { Transaction } from "firebase/firestore";
-import { collection, getDocs, runTransaction, doc } from "firebase/firestore";
+import { collection, getDocs, runTransaction, doc, Transaction } from "firebase/firestore";
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 import { User } from "../types/User";
-import { async } from "@firebase/util";
 
 @Component
 export default class VoteViewComponent extends Vue {
@@ -87,6 +85,9 @@ export default class VoteViewComponent extends Vue {
 
   async getPlans() {
     const planRef = collection(db, "plans");
+    console.log(db);
+
+    console.log(planRef);
     const planQuerySnapshot = await getDocs(planRef);
     this.plans = planQuerySnapshot.docs.map((doc) => {
       const data = doc.data();
@@ -127,7 +128,9 @@ export default class VoteViewComponent extends Vue {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
     const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
-    return usersVotesSnapshot.empty;
+    console.log("thisaaa");
+    console.log(usersVotesSnapshot);
+    return !usersVotesSnapshot.empty;
   }
 
   async insertVote() {
@@ -135,7 +138,6 @@ export default class VoteViewComponent extends Vue {
       return false;
     }
     this.isVoting = true;
-    this.successMessage = "投票が完了しました。";
 
     if (!this.isCurrentUser) {
       this.warningMessage = "投票するには会員登録が必要です。";
@@ -144,7 +146,7 @@ export default class VoteViewComponent extends Vue {
     }
 
     // データ挿入
-    if (!this.isUsersVotesCollection) {
+    if (this.isUsersVotesCollection) {
       this.errorMessage = "既に投票すみです。";
       this.isVoting = false;
       return false;
@@ -152,6 +154,7 @@ export default class VoteViewComponent extends Vue {
 
     const user_id = this.isCurrentUser.id;
     const user_name = this.isCurrentUser.name;
+
     try {
       await runTransaction(db, async (transaction) => {
         // 両方のドキュメントをトランザクション内で追加
@@ -175,11 +178,12 @@ export default class VoteViewComponent extends Vue {
   }
   mounted() {
     this.getPlans();
-    async () => {
+    const getIsUsersVotes = async () => {
       if (this.isCurrentUser) {
         this.isUsersVotesCollection = await this.isUsersVotes(this.isCurrentUser.id);
       }
     };
+    getIsUsersVotes();
   }
 }
 </script>
