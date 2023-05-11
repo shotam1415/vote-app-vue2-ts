@@ -1,4 +1,4 @@
-import { createLocalVue, shallowMount } from "@vue/test-utils";
+import { createLocalVue, shallowMount, mount } from "@vue/test-utils";
 import VoteViewComponent from "@/views/VoteView.vue";
 import Vuetify from "vuetify";
 import VueRouter from "vue-router";
@@ -149,5 +149,68 @@ describe("VoteView.vue", () => {
         .at(0)
         .text()
     ).toBe("投票が完了しました。");
+  });
+
+  it("プランのデータが格納されるとv-colが表示される", async () => {
+    //投票済判定
+    const plans = [
+      {
+        id: "1",
+        title: "A",
+        description: "Aの説明です。",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "2",
+        title: "B",
+        description: "Bの説明です。",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "3",
+        title: "C",
+        description: "Cの説明です。",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: "4",
+        title: "D",
+        description: "Dの説明です。",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    ];
+
+    const wrapper = shallowMount(VoteViewComponent, {
+      localVue,
+      vuetify,
+      router,
+      propsData: {
+        selectedPlan,
+        isUsersVotesCollection,
+        successMessage,
+        plans,
+      },
+      store,
+      computed: {
+        isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
+      },
+      methods: {
+        getPlans: jest.fn(),
+        insertUsersVote: jest.fn(),
+        insertPublicVote: jest.fn(),
+      },
+    });
+    await wrapper.setData({ plans: plans });
+    const vm: any = wrapper.vm;
+    await vm.getPlans();
+    await vm.$nextTick();
+    wrapper.vm.$nextTick(async () => {
+      const vCol = wrapper.findComponent({ name: "v-col" }); // => `name` でバーを検索します
+      expect(vCol.exists()).toBe(true);
+    });
   });
 });

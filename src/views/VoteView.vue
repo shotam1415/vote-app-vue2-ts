@@ -85,9 +85,6 @@ export default class VoteViewComponent extends Vue {
 
   async getPlans() {
     const planRef = collection(db, "plans");
-    console.log(db);
-
-    console.log(planRef);
     const planQuerySnapshot = await getDocs(planRef);
     this.plans = planQuerySnapshot.docs.map((doc) => {
       const data = doc.data();
@@ -128,8 +125,6 @@ export default class VoteViewComponent extends Vue {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
     const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
-    console.log("thisaaa");
-    console.log(usersVotesSnapshot);
     return !usersVotesSnapshot.empty;
   }
 
