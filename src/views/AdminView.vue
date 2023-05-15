@@ -37,6 +37,7 @@
                   <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
                   <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
                 </template>
+                <!-- eslint-disable-next-line -->
                 <template v-slot:body.append>
                   <tr>
                     <td></td>
@@ -46,7 +47,8 @@
                     <td colspan="4"></td>
                   </tr>
                 </template>
-                <template v-slot:item.actions="{ item }: any">
+                <!-- eslint-disable-next-line -->
+                <template v-slot:item.actions="{ item }">
                   <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
                   <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
                 </template>
@@ -391,7 +393,7 @@ export default class AdminViewComponent extends Vue {
       return false;
     }
     if (this.isCurrentUser.role !== 0) {
-      this.$router.push("/vote");
+      this.$router.push("/signin");
     }
   }
 
@@ -400,7 +402,7 @@ export default class AdminViewComponent extends Vue {
     // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isCurrentUser || this.isCurrentUser.role !== 0) {
-        this.$router.push("/vote");
+        this.$router.push("/signin");
       }
     });
     // データ取得
