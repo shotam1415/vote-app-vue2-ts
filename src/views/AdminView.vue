@@ -46,7 +46,7 @@
                     <td colspan="4"></td>
                   </tr>
                 </template>
-                <template v-slot:item.actions="{ item }">
+                <template v-slot:item.actions="{ item }: any">
                   <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
                   <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
                 </template>
@@ -283,7 +283,7 @@ export default class AdminViewComponent extends Vue {
     this.isNewItemDialog = true;
   }
 
-  editItem(item) {
+  editItem(item: any) {
     console.log(item);
     this.dialogCurrentData.name = item.name;
     this.dialogCurrentData.email = item.email;
@@ -292,7 +292,7 @@ export default class AdminViewComponent extends Vue {
     this.isEditItemDialog = true;
   }
 
-  deleteItem(item) {
+  deleteItem(item: any) {
     console.log(item);
   }
 
@@ -349,9 +349,12 @@ export default class AdminViewComponent extends Vue {
     console.log(this.navNum);
   }
 
-  filterOnlyCapsText(value, search, item) {
+  filterOnlyCapsText(value: any, search: any) {
     return value != null && search != null && typeof value === "string" && value.toString().toLocaleUpperCase().indexOf(search) !== -1;
   }
+  // filterOnlyCapsText(value:any, search:any, item) {
+  //   return value != null && search != null && typeof value === "string" && value.toString().toLocaleUpperCase().indexOf(search) !== -1;
+  // }
 
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
