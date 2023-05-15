@@ -3,9 +3,8 @@
     <v-card-title>
       <h1 class="display-1">管理画面</h1>
     </v-card-title>
-    <div class="layout">
-      <nav class="layout__nav"></nav>
-      <v-card height="400" width="256" class="mx-auto">
+    <v-layout justify-space-between align-start>
+      <v-card height="400" width="256">
         <v-navigation-drawer permanent>
           <v-list-item>
             <v-list-item-content>
@@ -26,10 +25,15 @@
           </v-list>
         </v-navigation-drawer>
       </v-card>
-      <div class="layout__chart">
-        <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponets v-if="isShow" :chartData="chartData" :options="options" /></div>
-      </div>
-    </div>
+      <v-container height="800" width="100%">
+        <v-list v-if="navNum === 0">
+          <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponets v-if="isShow" :chartData="chartData" :options="options" /></div>
+        </v-list>
+        <v-list v-if="navNum === 1">
+          <p>usersコレクション</p>
+        </v-list>
+      </v-container>
+    </v-layout>
   </div>
 </template>
 <style lang="scss">
@@ -37,31 +41,23 @@
   text-align: center;
 }
 
-.layout {
-  display: flex;
-  align-items: flex-start;
-}
-.layout__chart {
-  width: 85%;
-  position: relative;
-  .chartWrap {
-    width: 800px;
-    height: 800px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    opacity: 0;
-    pointer-events: none;
-    transition-duration: 0.3s;
-    &.isActive {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    > div > canvas {
-      width: 100%;
-    }
+.chartWrap {
+  width: 800px;
+  height: 800px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: 0.3s;
+  &.isActive {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  > div > canvas {
+    width: 100%;
   }
 }
 </style>
@@ -86,7 +82,10 @@ type plans = {
 })
 export default class AdminViewComponent extends Vue {
   // 変数
-  navItems = [{ title: "overview", icon: "mdi-notification-clear-all" }];
+  navItems = [
+    { title: "votetotal", icon: "mdi-notification-clear-all" },
+    { title: "users", icon: "mdi-account-group" },
+  ];
   navNum = 0;
 
   isShow = false;
