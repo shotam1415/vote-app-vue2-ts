@@ -169,6 +169,10 @@ export default class AdminViewComponent extends Vue {
     }
   }
 
+  get users(): User[] | undefined {
+    return this.$store.getters.users;
+  }
+
   @Watch("isCurrentUser")
   onChangeLoadingStatus() {
     if (!this.isCurrentUser) {
@@ -180,6 +184,7 @@ export default class AdminViewComponent extends Vue {
   }
 
   async mounted() {
+    console.log(this.users);
     // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isCurrentUser || this.isCurrentUser.role !== 0) {
