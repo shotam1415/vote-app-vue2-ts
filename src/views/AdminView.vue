@@ -34,6 +34,7 @@
             <div>
               <v-data-table :headers="headers" :items="users" item-key="name" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
                 <template v-slot:top>
+                  <v-btn color="primary" dark class="mb-2 ml-4 mt-4"> New Item </v-btn>
                   <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
                 </template>
                 <template v-slot:body.append>
