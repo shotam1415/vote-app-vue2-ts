@@ -45,6 +45,10 @@
                     <td colspan="4"></td>
                   </tr>
                 </template>
+                <template v-slot:item.actions="{ item }">
+                  <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+                  <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+                </template>
               </v-data-table>
             </div>
           </template>
@@ -103,6 +107,7 @@ export default class AdminViewComponent extends Vue {
     { title: "votetotal", icon: "mdi-notification-clear-all" },
     { title: "users", icon: "mdi-account-group" },
   ];
+
   navNum = 0;
 
   isShow = false;
@@ -123,11 +128,19 @@ export default class AdminViewComponent extends Vue {
   };
   search = "";
   calories = "";
+  users = this.getUsers;
 
   options = {
     responsive: true,
     maintainAspectRatio: false,
   };
+  editItem(item) {
+    console.log(item);
+  }
+
+  deleteItem(item) {
+    console.log(item);
+  }
 
   async getPlans() {
     const plansRef = query(collection(db, "plans"), orderBy("title", "asc"));
@@ -192,7 +205,7 @@ export default class AdminViewComponent extends Vue {
     }
   }
 
-  get users(): User[] | undefined {
+  get getUsers(): User[] | undefined {
     return this.$store.getters.users;
   }
   get headers(): any {
@@ -204,14 +217,15 @@ export default class AdminViewComponent extends Vue {
         value: "id",
       },
       {
-        text: "name",
+        text: "名前",
         value: "name",
       },
-      { text: "email", value: "email" },
-      { text: "role", value: "role" },
-      { text: "created_at", value: "created_at" },
-      { text: "updated_at", value: "updated_at" },
-      { text: "votes", value: "votes" },
+      { text: "メールアドレス", value: "email" },
+      { text: "役割", value: "role" },
+      { text: "作成日", value: "created_at" },
+      { text: "編集日", value: "updated_at" },
+      { text: "投票の有無", value: "votes" },
+      { text: "操作", value: "actions" },
     ];
   }
   @Watch("isCurrentUser")
