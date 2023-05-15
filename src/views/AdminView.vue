@@ -30,7 +30,24 @@
           <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponets v-if="isShow" :chartData="chartData" :options="options" /></div>
         </v-list>
         <v-list v-if="navNum === 1">
-          <p>usersコレクション</p>
+          <template>
+            <div>
+              <v-data-table :headers="headers" :items="users" item-key="name" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
+                <template v-slot:top>
+                  <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
+                </template>
+                <template v-slot:body.append>
+                  <tr>
+                    <td></td>
+                    <td>
+                      <v-text-field v-model="calories" type="number" label="Less than"></v-text-field>
+                    </td>
+                    <td colspan="4"></td>
+                  </tr>
+                </template>
+              </v-data-table>
+            </div>
+          </template>
         </v-list>
       </v-container>
     </v-layout>
@@ -104,6 +121,8 @@ export default class AdminViewComponent extends Vue {
       },
     ],
   };
+  search = "";
+  calories = "";
 
   options = {
     responsive: true,
@@ -163,6 +182,10 @@ export default class AdminViewComponent extends Vue {
     console.log(this.navNum);
   }
 
+  filterOnlyCapsText(value, search, item) {
+    return value != null && search != null && typeof value === "string" && value.toString().toLocaleUpperCase().indexOf(search) !== -1;
+  }
+
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
       return this.$store.getters.currentUser;
@@ -172,7 +195,25 @@ export default class AdminViewComponent extends Vue {
   get users(): User[] | undefined {
     return this.$store.getters.users;
   }
-
+  get headers(): any {
+    return [
+      {
+        text: "id",
+        align: "start",
+        sortable: false,
+        value: "id",
+      },
+      {
+        text: "name",
+        value: "name",
+      },
+      { text: "email", value: "email" },
+      { text: "role", value: "role" },
+      { text: "created_at", value: "created_at" },
+      { text: "updated_at", value: "updated_at" },
+      { text: "votes", value: "votes" },
+    ];
+  }
   @Watch("isCurrentUser")
   onChangeLoadingStatus() {
     if (!this.isCurrentUser) {
