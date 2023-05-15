@@ -53,6 +53,53 @@
               </v-data-table>
             </div>
           </template>
+          <template>
+            <v-row justify="center">
+              <v-dialog v-model="isEditDialog" persistent max-width="600px">
+                <v-card>
+                  <v-card-title>
+                    <span class="text-h5">Edit Profile</span>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-container>
+                      <v-row>
+                        <v-col cols="6">
+                          <v-text-field label="name(old)" readonly filled v-bind:value="dialogCurrentData.name"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="name(new)" required v-model="dialogEditData.name"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="Email(old)" readonly filled v-bind:value="dialogCurrentData.email"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="Email(new)" required v-model="dialogEditData.email"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="Password(old)" readonly filled v-bind:value="dialogCurrentData.password"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="Password(new)" required v-model="dialogEditData.password"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="role(old)" readonly filled v-bind:value="dialogCurrentData.role"></v-text-field>
+                        </v-col>
+                        <v-col cols="6">
+                          <v-text-field label="role(new)" required v-model="dialogEditData.role"></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                    <small>*indicates required field</small>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="isEditDialog = false"> Close </v-btn>
+                    <v-btn color="blue darken-1" text @click="isEditDialog = false"> Save </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </v-row>
+          </template>
         </v-list>
       </v-container>
     </v-layout>
@@ -131,12 +178,42 @@ export default class AdminViewComponent extends Vue {
   calories = "";
   users = this.getUsers;
 
+  isEditDialog = false;
+
   options = {
     responsive: true,
     maintainAspectRatio: false,
   };
+
+  dialogCurrentData = {
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+  };
+
+  dialogNewData = {
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+  };
+
+  dialogEditData = {
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+  };
+
   editItem(item) {
     console.log(item);
+    this.dialogCurrentData.name = item.name;
+    this.dialogCurrentData.email = item.email;
+    this.dialogCurrentData.password = item.password;
+    this.dialogCurrentData.role = item.role;
+
+    this.isEditDialog = true;
   }
 
   deleteItem(item) {
