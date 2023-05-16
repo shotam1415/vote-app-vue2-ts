@@ -32,7 +32,7 @@
         <v-list v-if="navNum === 1">
           <template>
             <div>
-              <v-data-table :headers="headers" :items="users" item-key="name" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
+              <v-data-table :headers="headers" :items="users" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
                 <template v-slot:top>
                   <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
                   <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
@@ -63,34 +63,30 @@
                     <span class="text-h5">Edit Profile</span>
                   </v-card-title>
                   <v-card-text>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="6">
-                          <v-text-field label="name(old)" readonly filled v-bind:value="dialogCurrentData.name"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="name(new)" required v-model="dialogEditItemData.name"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Email(old)" readonly filled v-bind:value="dialogCurrentData.email"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Email(new)" required v-model="dialogEditItemData.email"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Password(old)" readonly filled v-bind:value="dialogCurrentData.password"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Password(new)" required v-model="dialogEditItemData.password"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="role(old)" readonly filled v-bind:value="dialogCurrentData.role"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="role(new)" required v-model="dialogEditItemData.role"></v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-container>
+                    <v-form>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="6">
+                            <v-text-field label="name(old)" readonly filled v-bind:value="dialogCurrentData.name"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="name(new)" required v-model="dialogEditItemData.name"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="Email(old)" readonly filled v-bind:value="dialogCurrentData.email"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="Email(new)" required v-model="dialogEditItemData.email"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="role(old)" readonly filled v-bind:value="dialogCurrentData.role"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="role(new)" required v-model="dialogEditItemData.role"></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-form>
                     <small>*indicates required field</small>
                   </v-card-text>
                   <v-card-actions>
@@ -102,44 +98,34 @@
               </v-dialog>
               <v-dialog v-model="isEditItemDialog" persistent max-width="600px">
                 <v-card>
-                  <v-card-title>
-                    <span class="text-h5">Edit Profile</span>
-                  </v-card-title>
-                  <v-card-text>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="6">
-                          <v-text-field label="name(old)" readonly filled v-bind:value="dialogCurrentData.name"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="name(new)" required v-model="dialogEditItemData.name"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Email(old)" readonly filled v-bind:value="dialogCurrentData.email"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Email(new)" required v-model="dialogEditItemData.email"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Password(old)" readonly filled v-bind:value="dialogCurrentData.password"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="Password(new)" required v-model="dialogEditItemData.password"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="role(old)" readonly filled v-bind:value="dialogCurrentData.role"></v-text-field>
-                        </v-col>
-                        <v-col cols="6">
-                          <v-text-field label="role(new)" required v-model="dialogEditItemData.role"></v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Close </v-btn>
-                    <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Save </v-btn>
-                  </v-card-actions>
+                  <v-form>
+                    <v-card-title>
+                      <span class="text-h5">Edit Profile</span>
+                    </v-card-title>
+                    <v-card-text>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="6">
+                            <v-text-field label="name(old)" readonly filled v-bind:value="dialogCurrentData.name"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="name(new)" required v-model="dialogEditItemData.name"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="role(old)" readonly filled v-bind:value="dialogCurrentData.role"></v-text-field>
+                          </v-col>
+                          <v-col cols="6">
+                            <v-text-field label="role(new)" required v-model="dialogEditItemData.role"></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Close </v-btn>
+                      <v-btn color="blue darken-1" text @click="saveEditItem"> Save </v-btn>
+                    </v-card-actions>
+                  </v-form>
                 </v-card>
               </v-dialog>
               <v-dialog v-model="isNewItemDialog" persistent max-width="600px">
@@ -155,9 +141,6 @@
                         </v-col>
                         <v-col cols="12">
                           <v-text-field label="Email" required v-model="dialogNewItemData.email"></v-text-field>
-                        </v-col>
-                        <v-col cols="12">
-                          <v-text-field label="Password" required v-model="dialogNewItemData.password"></v-text-field>
                         </v-col>
                         <v-col cols="12">
                           <v-text-field label="role" required v-model="dialogNewItemData.role"></v-text-field>
@@ -210,9 +193,8 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import ChartComponets from "@/components/ChartComponets.vue";
 import { User } from "../types/User";
 import { getAuth } from "firebase/auth";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import db from "../firebase/firestore";
-import { async } from "@firebase/util";
 
 type plans = {
   title: string;
@@ -262,23 +244,20 @@ export default class AdminViewComponent extends Vue {
   };
 
   dialogCurrentData = {
+    id: "",
     name: "",
     email: "",
-    password: "",
     role: "",
   };
 
   dialogNewItemData = {
     name: "",
     email: "",
-    password: "",
     role: "",
   };
 
   dialogEditItemData = {
     name: "",
-    email: "",
-    password: "",
     role: "",
   };
 
@@ -288,11 +267,34 @@ export default class AdminViewComponent extends Vue {
 
   editItem(item: any) {
     console.log(item);
+    //データクリア
+    this.dialogEditItemData.name = "";
+    this.dialogEditItemData.role = "";
+
+    this.dialogCurrentData.id = item.id;
     this.dialogCurrentData.name = item.name;
-    this.dialogCurrentData.email = item.email;
-    this.dialogCurrentData.password = item.password;
     this.dialogCurrentData.role = item.role;
     this.isEditItemDialog = true;
+  }
+
+  async saveEditItem() {
+    const docRef = doc(db, "users", this.dialogCurrentData.id);
+    const name = this.dialogEditItemData.name ? this.dialogEditItemData.name : this.dialogCurrentData.name;
+    const role = this.dialogEditItemData.role ? this.dialogEditItemData.role : this.dialogCurrentData.role;
+
+    const updatedItem = {
+      name: name,
+      role: role,
+      updated_at: serverTimestamp(),
+    };
+
+    try {
+      await updateDoc(docRef, updatedItem);
+      this.setUsers();
+    } catch (error) {
+      console.log(error);
+    }
+    this.isEditItemDialog = false;
   }
 
   deleteItem(item: any) {
@@ -376,7 +378,6 @@ export default class AdminViewComponent extends Vue {
         name: data.name,
         email: data.email,
         role: data.role,
-        password: data.password,
         created_at: data.created_at,
         updated_at: data.updated_at,
         votes: isVotes,
