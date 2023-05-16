@@ -212,6 +212,7 @@ import { User } from "../types/User";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import db from "../firebase/firestore";
+import { async } from "@firebase/util";
 
 type plans = {
   title: string;
@@ -250,7 +251,7 @@ export default class AdminViewComponent extends Vue {
   };
   search = "";
   calories = "";
-  users = this.getUsers;
+  users: User[] | undefined = [];
 
   isNewItemDialog = false;
   isEditItemDialog = false;
@@ -357,6 +358,35 @@ export default class AdminViewComponent extends Vue {
   // filterOnlyCapsText(value:any, search:any, item) {
   //   return value != null && search != null && typeof value === "string" && value.toString().toLocaleUpperCase().indexOf(search) !== -1;
   // }
+  async isUsersVotes(user_id: string) {
+    const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
+    const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
+    const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
+    return !usersVotesSnapshot.empty;
+  }
+
+  async setUsers() {
+    const userRef = collection(db, "users");
+    const userQuerySnapshot = await getDocs(userRef);
+    const usersPromises = userQuerySnapshot.docs.map(async (doc) => {
+      const isVotes = await this.isUsersVotes(doc.id);
+      const data = doc.data();
+      const user: User = {
+        id: doc.id,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        password: data.password,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        votes: isVotes,
+      };
+      return user;
+    });
+    const users = await Promise.all(usersPromises);
+    this.$store.commit("setUsers", users);
+    this.users = this.getUsers;
+  }
 
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
@@ -387,6 +417,7 @@ export default class AdminViewComponent extends Vue {
       { text: "操作", value: "actions" },
     ];
   }
+
   @Watch("isCurrentUser")
   onChangeLoadingStatus() {
     if (!this.isCurrentUser) {
@@ -398,7 +429,6 @@ export default class AdminViewComponent extends Vue {
   }
 
   async mounted() {
-    console.log(this.users);
     // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
       if (!this.isCurrentUser || this.isCurrentUser.role !== 0) {
@@ -407,6 +437,7 @@ export default class AdminViewComponent extends Vue {
     });
     // データ取得
     this.getVotedChartData();
+    this.setUsers();
   }
 }
 </script>
