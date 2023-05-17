@@ -6,13 +6,11 @@
           <template v-slot:top>
             <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
           </template>
-          <!-- eslint-disable-next-line -->
-          <template v-slot:body.append>
-            <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
+          <template v-slot:[`body.append`]>
+            <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="openNewItemDialog()"> New Item </v-btn>
           </template>
-          <!-- eslint-disable-next-line -->
-          <template v-slot:item.actions="{ item }">
-            <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+          <template v-slot:[`item.actions`]="{ item }">
+            <v-icon small class="mr-2" @click="openEditItemDialog(item)"> mdi-pencil </v-icon>
             <v-icon small @click="deleteItem(item.id)"> mdi-delete </v-icon>
           </template>
         </v-data-table>
@@ -88,6 +86,7 @@ import db from "../firebase/firestore";
 
 @Component
 export default class AdminContentsView extends Vue {
+  // v-data-table用変数
   get headers(): any {
     return [
       {
@@ -98,64 +97,76 @@ export default class AdminContentsView extends Vue {
       { text: "操作", value: "actions" },
     ];
   }
-
-  contents = [];
   search = "";
-  calories = "";
+  contents = [];
+
+  // モーダルのフラグ
   isNewItemDialog = false;
   isEditItemDialog = false;
 
+  // 入力データの格納先
   dialogCurrentData = {
     id: "",
     title: "",
     description: "",
   };
-
   dialogNewItemData = {
     title: "",
     description: "",
   };
-
   dialogEditItemData = {
     title: "",
     description: "",
   };
 
-  NewItem() {
+  //NewItemDialogのロジック
+  openNewItemDialog() {
     this.isNewItemDialog = true;
   }
 
   async saveNewItem() {
-    await addDoc(collection(db, "contents"), this.dialogNewItemData);
-    this.setContents();
+    try {
+      await addDoc(collection(db, "contents"), this.dialogNewItemData);
+      this.setContents();
+    } catch (error) {
+      console.log(error);
+    }
     this.isNewItemDialog = false;
   }
 
-  editItem(item: any) {
-    console.log(item);
-    //データクリア
+  // EditDialogItemのロジック
+  openEditItemDialog(item: any) {
+    this.isEditItemDialog = true;
+    this.clearEditDialogItem;
+    this.addDialogCurrentValue(item);
+  }
+
+  clearEditDialogItem() {
     this.dialogEditItemData.title = "";
     this.dialogEditItemData.description = "";
+  }
 
+  addDialogCurrentValue(item: any) {
     this.dialogCurrentData.id = item.id;
     this.dialogCurrentData.title = item.title;
     this.dialogCurrentData.description = item.description;
-
-    this.isEditItemDialog = true;
   }
 
-  async saveEditItem() {
-    const docRef = doc(db, "contents", this.dialogCurrentData.id);
+  prioritizeUpdatedData() {
     const title = this.dialogEditItemData.title ? this.dialogEditItemData.title : this.dialogCurrentData.title;
     const description = this.dialogEditItemData.description ? this.dialogEditItemData.description : this.dialogCurrentData.description;
-
     const updatedItem = {
       title: title,
       description: description,
     };
+    return updatedItem;
+  }
 
+  async saveEditItem() {
+    const docRef = doc(db, "contents", this.dialogCurrentData.id);
+    const updatedData = this.prioritizeUpdatedData();
     try {
-      await updateDoc(docRef, updatedItem);
+      await updateDoc(docRef, updatedData);
       this.setContents();
     } catch (error) {
       console.log(error);
@@ -164,7 +175,7 @@ export default class AdminContentsView extends Vue {
   }
 
   async deleteItem(content_id: string) {
-    const result = confirm("消しますか");
+    const result = confirm("本当に消去しますか。");
     if (result) {
       await deleteDoc(doc(db, "contents", content_id));
       this.setContents();
