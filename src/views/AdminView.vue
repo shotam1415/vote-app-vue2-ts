@@ -131,6 +131,9 @@
             </v-row>
           </template>
         </v-list>
+        <v-list v-if="navNum === 2">
+          <AdminContentsView />
+        </v-list>
       </v-container>
     </v-layout>
   </div>
@@ -164,6 +167,7 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import ChartComponets from "@/components/ChartComponets.vue";
+import AdminContentsView from "./AdminContentsView.vue";
 import { User } from "../types/User";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -177,6 +181,7 @@ type plans = {
 @Component({
   components: {
     ChartComponets,
+    AdminContentsView,
   },
 })
 export default class AdminViewComponent extends Vue {
@@ -184,6 +189,7 @@ export default class AdminViewComponent extends Vue {
   navItems = [
     { title: "votetotal", icon: "mdi-notification-clear-all" },
     { title: "users", icon: "mdi-account-group" },
+    { title: "contents", icon: "mdi-aspect-ratio" },
   ];
 
   navNum = 0;
