@@ -197,6 +197,7 @@ export default class AdminContentsView extends Vue {
     const contentRef = collection(db, "contents");
     const contentQuerySnapshot = await getDocs(contentRef);
     const contents = contentQuerySnapshot.docs.map((doc) => {
+      console.log(doc);
       const data = doc.data();
       const content: Content = {
         id: doc.id,
