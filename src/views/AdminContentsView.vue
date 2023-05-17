@@ -68,10 +68,10 @@
               <v-container>
                 <v-row>
                   <v-col cols="12">
-                    <v-text-field label="name" required v-model="dialogNewItemData.title"></v-text-field>
+                    <v-text-field label="title" required v-model="dialogNewItemData.title"></v-text-field>
                   </v-col>
                   <v-col cols="12">
-                    <v-text-field label="Email" required v-model="dialogNewItemData.description"></v-text-field>
+                    <v-text-field label="description" required v-model="dialogNewItemData.description"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -79,7 +79,7 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Close </v-btn>
-              <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Save </v-btn>
+              <v-btn color="blue darken-1" text @click="saveNewItem"> Save </v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -90,7 +90,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
 import db from "../firebase/firestore";
 
 @Component
@@ -138,6 +138,12 @@ export default class AdminContentsView extends Vue {
 
   NewItem() {
     this.isNewItemDialog = true;
+  }
+
+  async saveNewItem() {
+    await addDoc(collection(db, "contents"), this.dialogNewItemData);
+    this.setContents();
+    this.isNewItemDialog = false;
   }
 
   editItem(item: any) {
