@@ -2,7 +2,7 @@
   <div>
     <template>
       <div>
-        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
+        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search">
           <template v-slot:top>
             <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
             <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
@@ -184,10 +184,6 @@ export default class AdminContentsView extends Vue {
       await deleteDoc(doc(db, "contents", content_id));
       this.setContents();
     }
-  }
-
-  filterOnlyCapsText(value: any, search: any) {
-    return value != null && search != null && typeof value === "string" && value.toString().toLocaleUpperCase().indexOf(search) !== -1;
   }
 
   async setContents() {
