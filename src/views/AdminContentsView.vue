@@ -2,7 +2,7 @@
   <div>
     <template>
       <div>
-        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
+        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText" :loading="contents">
           <template v-slot:top>
             <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
             <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
@@ -147,26 +147,25 @@ export default class AdminContentsView extends Vue {
     this.dialogEditItemData.description = "";
 
     this.dialogCurrentData.id = item.id;
-    this.dialogCurrentData.title = item.name;
-    this.dialogCurrentData.description = item.email;
+    this.dialogCurrentData.title = item.title;
+    this.dialogCurrentData.description = item.description;
 
     this.isEditItemDialog = true;
   }
 
   async saveEditItem() {
-    const docRef = doc(db, "users", this.dialogCurrentData.id);
+    const docRef = doc(db, "contents", this.dialogCurrentData.id);
     const title = this.dialogEditItemData.title ? this.dialogEditItemData.title : this.dialogCurrentData.title;
     const description = this.dialogEditItemData.description ? this.dialogEditItemData.description : this.dialogCurrentData.description;
 
     const updatedItem = {
       title: title,
       description: description,
-      updated_at: serverTimestamp(),
     };
 
     try {
       await updateDoc(docRef, updatedItem);
-      //   this.setUsers();
+      this.setContents();
     } catch (error) {
       console.log(error);
     }
@@ -184,15 +183,12 @@ export default class AdminContentsView extends Vue {
   async setContents() {
     const contentRef = collection(db, "contents");
     const contentQuerySnapshot = await getDocs(contentRef);
-    const contents = contentQuerySnapshot.docs.map(async (doc) => {
+    const contents = contentQuerySnapshot.docs.map((doc) => {
       const data = doc.data();
       const content: any = {
         id: doc.id,
         title: data.title,
         description: data.description,
-        role: data.role,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
       };
       return content;
     });
