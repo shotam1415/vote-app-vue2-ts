@@ -8,11 +8,13 @@ export default new Vuex.Store({
     currentUser: null,
     isAuth: false,
     users: [],
+    contents: [],
   },
   getters: {
     currentUser: (state) => state.currentUser,
     isAuth: (state) => state.isAuth,
     users: (state) => state.users,
+    contents: (state) => state.contents,
   },
   mutations: {
     setCurrentUser(state, newCurrentUser) {
@@ -23,6 +25,9 @@ export default new Vuex.Store({
     },
     setUsers(state, newUsers) {
       state.users = newUsers;
+    },
+    setContents(state, newUsers) {
+      state.contents = newUsers;
     },
   },
   actions: {},

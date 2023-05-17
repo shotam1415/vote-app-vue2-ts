@@ -1,10 +1,211 @@
 <template>
-  <div>contents</div>
+  <div>
+    <template>
+      <div>
+        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
+          <template v-slot:top>
+            <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
+            <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
+          </template>
+          <!-- eslint-disable-next-line -->
+          <template v-slot:body.append>
+            <tr>
+              <td></td>
+              <td>
+                <v-text-field v-model="calories" type="number" label="Less than"></v-text-field>
+              </td>
+              <td colspan="4"></td>
+            </tr>
+          </template>
+          <!-- eslint-disable-next-line -->
+          <template v-slot:item.actions="{ item }">
+            <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
+            <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+          </template>
+        </v-data-table>
+      </div>
+    </template>
+    <template>
+      <v-row justify="center">
+        <v-dialog v-model="isEditItemDialog" persistent max-width="600px">
+          <v-card>
+            <v-form>
+              <v-card-title>
+                <span class="text-h5">Edit Profile</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col cols="6">
+                      <v-text-field label="title(old)" readonly filled v-bind:value="dialogCurrentData.title"></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-text-field label="title(new)" required v-model="dialogEditItemData.title"></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-text-field label="description(old)" readonly filled v-bind:value="dialogCurrentData.description"></v-text-field>
+                    </v-col>
+                    <v-col cols="6">
+                      <v-text-field label="description(new)" required v-model="dialogEditItemData.description"></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Close </v-btn>
+                <v-btn color="blue darken-1" text @click="saveEditItem"> Save </v-btn>
+              </v-card-actions>
+            </v-form>
+          </v-card>
+        </v-dialog>
+        <v-dialog v-model="isNewItemDialog" persistent max-width="600px">
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">New Profile</span>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field label="name" required v-model="dialogNewItemData.title"></v-text-field>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-text-field label="Email" required v-model="dialogNewItemData.description"></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Close </v-btn>
+              <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Save </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-row>
+    </template>
+  </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import { collection, getDocs, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import db from "../firebase/firestore";
 
 @Component
-export default class AdminContentsView extends Vue {}
+export default class AdminContentsView extends Vue {
+  get headers(): any {
+    return [
+      {
+        text: "id",
+        align: "start",
+        sortable: false,
+        value: "id",
+      },
+      {
+        text: "タイトル",
+        value: "title",
+      },
+      { text: "説明", value: "description" },
+      { text: "作成日", value: "created_at" },
+      { text: "編集日", value: "updated_at" },
+      { text: "操作", value: "actions" },
+    ];
+  }
+
+  contents = [];
+  search = "";
+  calories = "";
+  isNewItemDialog = false;
+  isEditItemDialog = false;
+
+  dialogCurrentData = {
+    id: "",
+    title: "",
+    description: "",
+  };
+
+  dialogNewItemData = {
+    title: "",
+    description: "",
+  };
+
+  dialogEditItemData = {
+    title: "",
+    description: "",
+  };
+
+  NewItem() {
+    this.isNewItemDialog = true;
+  }
+
+  editItem(item: any) {
+    console.log(item);
+    //データクリア
+    this.dialogEditItemData.title = "";
+    this.dialogEditItemData.description = "";
+
+    this.dialogCurrentData.id = item.id;
+    this.dialogCurrentData.title = item.name;
+    this.dialogCurrentData.description = item.email;
+
+    this.isEditItemDialog = true;
+  }
+
+  async saveEditItem() {
+    const docRef = doc(db, "users", this.dialogCurrentData.id);
+    const title = this.dialogEditItemData.title ? this.dialogEditItemData.title : this.dialogCurrentData.title;
+    const description = this.dialogEditItemData.description ? this.dialogEditItemData.description : this.dialogCurrentData.description;
+
+    const updatedItem = {
+      title: title,
+      description: description,
+      updated_at: serverTimestamp(),
+    };
+
+    try {
+      await updateDoc(docRef, updatedItem);
+      //   this.setUsers();
+    } catch (error) {
+      console.log(error);
+    }
+    this.isEditItemDialog = false;
+  }
+
+  deleteItem(item: any) {
+    console.log(item);
+  }
+
+  filterOnlyCapsText(value: any, search: any) {
+    return value != null && search != null && typeof value === "string" && value.toString().toLocaleUpperCase().indexOf(search) !== -1;
+  }
+
+  async setContents() {
+    const contentRef = collection(db, "contents");
+    const contentQuerySnapshot = await getDocs(contentRef);
+    const contents = contentQuerySnapshot.docs.map(async (doc) => {
+      const data = doc.data();
+      const content: any = {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        role: data.role,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      };
+      return content;
+    });
+    this.$store.commit("setContents", contents);
+    this.contents = this.getContents;
+  }
+
+  get getContents(): any {
+    return this.$store.getters.contents;
+  }
+
+  async mounted() {
+    this.setContents();
+  }
+}
 </script>
