@@ -84,10 +84,21 @@ import { Component, Vue } from "vue-property-decorator";
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
 import db from "../firebase/firestore";
 
+type Content = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+type Headers = {
+  text: string;
+  value: string;
+};
+
 @Component
 export default class AdminContentsView extends Vue {
   // v-data-table用変数
-  get headers(): any {
+  get headers(): Headers[] {
     return [
       {
         text: "タイトル",
@@ -98,7 +109,7 @@ export default class AdminContentsView extends Vue {
     ];
   }
   search = "";
-  contents = [];
+  contents: Content[] | undefined = [];
 
   // モーダルのフラグ
   isNewItemDialog = false;
@@ -135,7 +146,7 @@ export default class AdminContentsView extends Vue {
   }
 
   // EditDialogItemのロジック
-  openEditItemDialog(item: any) {
+  openEditItemDialog(item: Content) {
     this.isEditItemDialog = true;
     this.clearEditDialogItem;
     this.addDialogCurrentValue(item);
@@ -146,7 +157,7 @@ export default class AdminContentsView extends Vue {
     this.dialogEditItemData.description = "";
   }
 
-  addDialogCurrentValue(item: any) {
+  addDialogCurrentValue(item: Content) {
     this.dialogCurrentData.id = item.id;
     this.dialogCurrentData.title = item.title;
     this.dialogCurrentData.description = item.description;
@@ -187,7 +198,7 @@ export default class AdminContentsView extends Vue {
     const contentQuerySnapshot = await getDocs(contentRef);
     const contents = contentQuerySnapshot.docs.map((doc) => {
       const data = doc.data();
-      const content: any = {
+      const content: Content = {
         id: doc.id,
         title: data.title,
         description: data.description,
@@ -198,7 +209,7 @@ export default class AdminContentsView extends Vue {
     this.contents = this.getContents;
   }
 
-  get getContents(): any {
+  get getContents(): Content[] {
     return this.$store.getters.contents;
   }
 
