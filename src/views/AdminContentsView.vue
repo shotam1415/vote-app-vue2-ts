@@ -4,18 +4,11 @@
       <div>
         <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search">
           <template v-slot:top>
-            <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
             <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
           </template>
           <!-- eslint-disable-next-line -->
           <template v-slot:body.append>
-            <tr>
-              <td></td>
-              <td>
-                <v-text-field v-model="calories" type="number" label="Less than"></v-text-field>
-              </td>
-              <td colspan="4"></td>
-            </tr>
+            <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
           </template>
           <!-- eslint-disable-next-line -->
           <template v-slot:item.actions="{ item }">
@@ -98,18 +91,10 @@ export default class AdminContentsView extends Vue {
   get headers(): any {
     return [
       {
-        text: "id",
-        align: "start",
-        sortable: false,
-        value: "id",
-      },
-      {
         text: "タイトル",
         value: "title",
       },
       { text: "説明", value: "description" },
-      { text: "作成日", value: "created_at" },
-      { text: "編集日", value: "updated_at" },
       { text: "操作", value: "actions" },
     ];
   }
