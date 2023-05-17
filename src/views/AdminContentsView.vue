@@ -2,7 +2,7 @@
   <div>
     <template>
       <div>
-        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText" :loading="contents">
+        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
           <template v-slot:top>
             <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
             <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
@@ -20,7 +20,7 @@
           <!-- eslint-disable-next-line -->
           <template v-slot:item.actions="{ item }">
             <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-            <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+            <v-icon small @click="deleteItem(item.id)"> mdi-delete </v-icon>
           </template>
         </v-data-table>
       </div>
@@ -90,7 +90,7 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { collection, getDocs, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import db from "../firebase/firestore";
 
 @Component
@@ -172,8 +172,12 @@ export default class AdminContentsView extends Vue {
     this.isEditItemDialog = false;
   }
 
-  deleteItem(item: any) {
-    console.log(item);
+  async deleteItem(content_id: string) {
+    const result = confirm("消しますか");
+    if (result) {
+      await deleteDoc(doc(db, "contents", content_id));
+      this.setContents();
+    }
   }
 
   filterOnlyCapsText(value: any, search: any) {
