@@ -13,8 +13,6 @@ let vuetify: any;
 localVue.use(Vuex);
 let getters: any;
 let store: any;
-let contents;
-
 beforeEach(() => {
   vuetify = new Vuetify();
   getters = {
@@ -23,7 +21,7 @@ beforeEach(() => {
   store = new Vuex.Store(getters);
 });
 
-const contentsObject = [
+const contents = [
   { title: "Title 0", description: "Description 0" },
   { title: "Title 1", description: "Description 1" },
   { title: "Title 2", description: "Description 2" },
@@ -40,28 +38,50 @@ jest.mock("firebase/firestore", () => ({
   getFirestore: jest.fn(),
 }));
 
+const headers = {
+  mobile: false,
+};
+
+//投票済判定
+const wrapper = mount(AdminContentsView, {
+  localVue,
+  vuetify,
+  router,
+  propsData: { headers },
+  store,
+  methods: {
+    getPlans: jest.fn(),
+    insertUsersVote: jest.fn(),
+    insertPublicVote: jest.fn(),
+    setContents: jest.fn(() => {
+      contents;
+    }),
+  },
+  stubs: {
+    "v-btn": true,
+    "v-dialog": true,
+    // "v-data-table": VDataTable,
+  },
+  computed: {
+    isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
+    // headers: () => {
+    //   [
+    //     {
+    //       text: "タイトル",
+    //       value: "title",
+    //     },
+    //     { text: "説明", value: "description" },
+    //     { text: "操作", value: "actions" },
+    //   ];
+    // },
+  },
+});
+
 describe("AdminContentsView.vue", () => {
   it("レンダリングされるかどうか", async () => {
-    //投票済判定
-    const wrapper = shallowMount(AdminContentsView, {
-      localVue,
-      vuetify,
-      router,
-      propsData: {},
-      store,
-      methods: {
-        getPlans: jest.fn(),
-        insertUsersVote: jest.fn(),
-        insertPublicVote: jest.fn(),
-        setContents: jest.fn(() => {
-          contents = contentsObject;
-        }),
-      },
-      computed: {
-        isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
-      },
-    });
-
     expect(wrapper.exists()).toBe(true);
+  });
+  it("contentsがあった時、v-data-tableのレンダリングされるかどうか", async () => {
+    console.log(wrapper.html());
   });
 });

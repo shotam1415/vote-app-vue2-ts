@@ -18,7 +18,7 @@
     </template>
     <template>
       <v-row justify="center">
-        <v-dialog v-model="isEditItemDialog" persistent max-width="600px">
+        <v-dialog v-model="isEditItemDialog" persistent max-width="600px" data-type="EditProfile">
           <v-card>
             <v-form>
               <v-card-title>
@@ -50,7 +50,7 @@
             </v-form>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="isNewItemDialog" persistent max-width="600px">
+        <v-dialog v-model="isNewItemDialog" persistent max-width="600px" data-type="NewProfile">
           <v-card>
             <v-card-title>
               <span class="text-h5">New Profile</span>
@@ -98,16 +98,15 @@ type Headers = {
 @Component
 export default class AdminContentsView extends Vue {
   // v-data-table用変数
-  get headers(): Headers[] {
-    return [
-      {
-        text: "タイトル",
-        value: "title",
-      },
-      { text: "説明", value: "description" },
-      { text: "操作", value: "actions" },
-    ];
-  }
+  headers = [
+    {
+      text: "タイトル",
+      value: "title",
+    },
+    { text: "説明", value: "description" },
+    { text: "操作", value: "actions" },
+  ];
+
   search = "";
   contents: Content[] | undefined = [];
 
