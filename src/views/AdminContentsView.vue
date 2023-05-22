@@ -206,10 +206,7 @@ export default class AdminContentsView extends Vue {
   }
 
   @Getter currentContents!: Content[];
-
-  @Mutation setCurrentContents(contents: Content[]) {
-    this.contents = contents;
-  }
+  @Mutation("setCurrentContents") setCurrentContents!: (content: Content[]) => void;
 
   async mounted() {
     this.setContents();

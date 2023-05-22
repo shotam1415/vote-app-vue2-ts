@@ -23,6 +23,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { getDoc, doc } from "@firebase/firestore";
 import db from "./firebase/firestore";
 import { User } from "./types/User";
+import { Getter, Mutation } from "vuex-class";
 
 @Component
 export default class AppComponent extends Vue {
@@ -59,18 +60,8 @@ export default class AppComponent extends Vue {
     }
   }
 
-  // store:getter
-  get isCurrentUser(): User | undefined {
-    if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser;
-    }
-  }
-
-  get isAuth(): boolean | undefined {
-    if (this.$store.getters.isAuth) {
-      return this.$store.getters.isAuth;
-    }
-  }
+  @Getter isCurrentUser!: any;
+  @Getter isAuth!: boolean;
 
   async mounted() {
     this.auth.onAuthStateChanged(() => {
