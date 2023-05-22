@@ -13,13 +13,11 @@ export default new Vuex.Store({
   state: {
     currentUser: null,
     isAuth: false,
-    users: [],
     contents: [],
   },
   getters: {
     currentUser: (state) => state.currentUser,
     isAuth: (state) => state.isAuth,
-    users: (state) => state.users,
     currentContents(state: any): any {
       return state.contents;
     },
@@ -30,9 +28,6 @@ export default new Vuex.Store({
     },
     setIsAuth(state, newIsAuth) {
       state.isAuth = newIsAuth;
-    },
-    setUsers(state, newUsers) {
-      state.users = newUsers;
     },
     setCurrentContents(state, newUsers) {
       state.contents = newUsers;

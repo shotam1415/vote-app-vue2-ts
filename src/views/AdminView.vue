@@ -30,108 +30,6 @@
           <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponets v-if="isShow" :chartData="chartData" :options="options" /></div>
         </v-list>
         <v-list v-if="navNum === 1">
-          <template>
-            <div>
-              <v-data-table :headers="headers" :items="users" item-key="id" class="elevation-1" :search="search" :custom-filter="filterOnlyCapsText">
-                <template v-slot:top>
-                  <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="NewItem()"> New Item </v-btn>
-                  <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
-                </template>
-                <!-- eslint-disable-next-line -->
-                <template v-slot:body.append>
-                  <tr>
-                    <td></td>
-                    <td>
-                      <v-text-field v-model="calories" type="number" label="Less than"></v-text-field>
-                    </td>
-                    <td colspan="4"></td>
-                  </tr>
-                </template>
-                <!-- eslint-disable-next-line -->
-                <template v-slot:item.actions="{ item }">
-                  <v-icon small class="mr-2" @click="editItem(item)"> mdi-pencil </v-icon>
-                  <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
-                </template>
-              </v-data-table>
-            </div>
-          </template>
-          <template>
-            <v-row justify="center">
-              <v-dialog v-model="isEditItemDialog" persistent max-width="600px">
-                <v-card>
-                  <v-form>
-                    <v-card-title>
-                      <span class="text-h5">Edit Profile</span>
-                    </v-card-title>
-                    <v-card-text>
-                      <v-container>
-                        <v-row>
-                          <v-col cols="6">
-                            <v-text-field label="name(old)" readonly filled v-bind:value="dialogCurrentData.name"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="name(new)" required v-model="dialogEditItemData.name"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="email(old)" readonly filled v-bind:value="dialogCurrentData.email"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="email(new)" required v-model="dialogEditItemData.email"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="password(old)" readonly filled v-bind:value="dialogCurrentData.password"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="password(new)" required v-model="dialogEditItemData.password"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="role(old)" readonly filled v-bind:value="dialogCurrentData.role"></v-text-field>
-                          </v-col>
-                          <v-col cols="6">
-                            <v-text-field label="role(new)" required v-model="dialogEditItemData.role"></v-text-field>
-                          </v-col>
-                        </v-row>
-                      </v-container>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Close </v-btn>
-                      <v-btn color="blue darken-1" text @click="saveEditItem"> Save </v-btn>
-                    </v-card-actions>
-                  </v-form>
-                </v-card>
-              </v-dialog>
-              <v-dialog v-model="isNewItemDialog" persistent max-width="600px">
-                <v-card>
-                  <v-card-title>
-                    <span class="text-h5">New Profile</span>
-                  </v-card-title>
-                  <v-card-text>
-                    <v-container>
-                      <v-row>
-                        <v-col cols="12">
-                          <v-text-field label="name" required v-model="dialogNewItemData.name"></v-text-field>
-                        </v-col>
-                        <v-col cols="12">
-                          <v-text-field label="Email" required v-model="dialogNewItemData.email"></v-text-field>
-                        </v-col>
-                        <v-col cols="12">
-                          <v-text-field label="role" required v-model="dialogNewItemData.role"></v-text-field>
-                        </v-col>
-                      </v-row>
-                    </v-container>
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Close </v-btn>
-                    <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Save </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </v-row>
-          </template>
-        </v-list>
-        <v-list v-if="navNum === 2">
           <AdminContentsView />
         </v-list>
       </v-container>
@@ -188,7 +86,6 @@ export default class AdminViewComponent extends Vue {
   // 変数
   navItems = [
     { title: "votetotal", icon: "mdi-notification-clear-all" },
-    { title: "users", icon: "mdi-account-group" },
     { title: "contents", icon: "mdi-aspect-ratio" },
   ];
 
