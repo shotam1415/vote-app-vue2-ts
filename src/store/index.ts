@@ -9,16 +9,28 @@ type Content = {
   description: string;
 };
 
+type StateType = {
+  currentUser: any;
+  isAuth: boolean;
+  contents: Content[];
+};
+
 export default new Vuex.Store({
   state: {
     currentUser: null,
     isAuth: false,
-    contents: [],
+    contents: [
+      {
+        id: "",
+        title: "",
+        description: "",
+      },
+    ],
   },
   getters: {
-    currentUser: (state) => state.currentUser,
-    isAuth: (state) => state.isAuth,
-    currentContents(state: any): any {
+    currentUser: (state: StateType) => state.currentUser,
+    isAuth: (state: StateType) => state.isAuth,
+    currentContents(state: StateType): Content[] {
       return state.contents;
     },
   },
