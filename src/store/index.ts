@@ -28,8 +28,8 @@ export default new Vuex.Store({
     ],
   },
   getters: {
-    currentUser: (state: StateType) => state.currentUser,
-    isAuth: (state: StateType) => state.isAuth,
+    currentUser: (state: StateType): any => state.currentUser,
+    isAuth: (state: StateType): boolean => state.isAuth,
     currentContents(state: StateType): Content[] {
       return state.contents;
     },
