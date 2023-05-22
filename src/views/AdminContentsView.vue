@@ -83,16 +83,12 @@
 import { Component, Vue } from "vue-property-decorator";
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
 import db from "../firebase/firestore";
+import { Getter, Mutation } from "vuex-class";
 
 type Content = {
   id: string;
   title: string;
   description: string;
-};
-
-type Headers = {
-  text: string;
-  value: string;
 };
 
 @Component
@@ -205,12 +201,14 @@ export default class AdminContentsView extends Vue {
       };
       return content;
     });
-    this.$store.commit("setContents", contents);
-    this.contents = this.getContents;
+    this.setCurrentContents(contents);
+    this.contents = this.currentContents;
   }
 
-  get getContents(): Content[] {
-    return this.$store.getters.contents;
+  @Getter currentContents!: Content[];
+
+  @Mutation setCurrentContents(contents: Content[]) {
+    this.contents = contents;
   }
 
   async mounted() {
