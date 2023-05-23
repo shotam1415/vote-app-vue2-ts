@@ -4,7 +4,14 @@
       <div>
         <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search">
           <template v-slot:top>
-            <v-text-field v-model="search" label="Search (UPPER CASE ONLY)" class="mx-4"></v-text-field>
+            <v-row class="" justify="center">
+              <v-col cols="3">
+                <v-text-field v-model="titleFilterValue" type="text" label="Search (Title)"></v-text-field>
+              </v-col>
+              <v-col cols="3">
+                <v-text-field v-model="descriptionFilterValue" type="text" label="Search (Discription)"> </v-text-field>
+              </v-col>
+            </v-row>
           </template>
           <template v-slot:[`body.append`]>
             <v-btn color="primary" dark class="mb-2 ml-4 mt-4" @click="openNewItemDialog()"> New Item </v-btn>
@@ -94,18 +101,33 @@ type Content = {
 @Component
 export default class AdminContentsView extends Vue {
   // v-data-table用変数
-  headers = [
-    {
-      text: "タイトル",
-      value: "title",
-    },
-    { text: "説明", value: "description" },
-    { text: "操作", value: "actions" },
-  ];
-
+  get headers() {
+    return [
+      {
+        text: "タイトル",
+        value: "title",
+        filter: this.titleFilter,
+      },
+      { text: "説明", value: "description", filter: this.descriptionFilter },
+      { text: "操作", value: "actions" },
+    ];
+  }
   search = "";
   contents: Content[] | undefined = [];
-
+  titleFilterValue = "";
+  descriptionFilterValue = "";
+  titleFilter(value: string) {
+    if (!this.titleFilterValue) {
+      return true;
+    }
+    return value.toLowerCase().includes(this.titleFilterValue.toLowerCase());
+  }
+  descriptionFilter(value: string) {
+    if (!this.descriptionFilterValue) {
+      return true;
+    }
+    return value.toLowerCase().includes(this.descriptionFilterValue.toLowerCase());
+  }
   // モーダルのフラグ
   isNewItemDialog = false;
   isEditItemDialog = false;
