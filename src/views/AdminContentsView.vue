@@ -74,9 +74,10 @@
                 </v-row>
               </v-container>
             </v-card-text>
+            <v-alert v-show="warningMessage" type="warning" class="mx-8">{{ warningMessage }}</v-alert>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Close </v-btn>
+              <v-btn color="blue darken-1" text @click="closeNewItem"> Close </v-btn>
               <v-btn color="blue darken-1" text @click="saveNewItem"> Save </v-btn>
             </v-card-actions>
           </v-card>
@@ -145,23 +146,48 @@ export default class AdminContentsView extends Vue {
     title: "",
     description: "",
   };
-
+  warningMessage = "";
   //NewItemDialogのロジック
   openNewItemDialog() {
     this.isNewItemDialog = true;
   }
 
+  hasEmptyProperty(object: any) {
+    for (let prop in object) {
+      if (object.hasOwnProperty(prop) && object[prop] === "") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  resetNewItem() {
+    this.warningMessage = "";
+    this.dialogNewItemData.title = "";
+    this.dialogNewItemData.description = "";
+  }
+
+  closeNewItem() {
+    this.resetNewItem();
+    this.isNewItemDialog = false;
+  }
+
   async saveNewItem() {
+    if (this.hasEmptyProperty(this.dialogNewItemData)) {
+      this.warningMessage = "情報を入力してください";
+      return false;
+    }
     try {
       await addDoc(collection(db, "contents"), this.dialogNewItemData);
       this.setContents();
+      this.resetNewItem();
     } catch (error) {
       console.log(error);
+      this.resetNewItem();
     }
     this.isNewItemDialog = false;
   }
 
-  // EditDialogItemのロジック
   openEditItemDialog(item: Content) {
     this.isEditItemDialog = true;
     this.clearEditDialogItem;
