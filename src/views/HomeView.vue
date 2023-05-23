@@ -38,14 +38,9 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import HelloWorld from "@/components/HelloWorld.vue";
 import { User } from "../types/User";
 
-@Component({
-  components: {
-    HelloWorld,
-  },
-})
+@Component
 export default class HomeView extends Vue {
   get isCurrentUser(): User | undefined {
     if (this.$store.getters.currentUser) {
