@@ -2,7 +2,7 @@
   <div>
     <template>
       <div>
-        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search">
+        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1">
           <template v-slot:top>
             <v-row class="" justify="center">
               <v-col cols="3">
@@ -112,7 +112,6 @@ export default class AdminContentsView extends Vue {
       { text: "操作", value: "actions" },
     ];
   }
-  search = "";
   contents: Content[] | undefined = [];
   titleFilterValue = "";
   descriptionFilterValue = "";
