@@ -65,7 +65,7 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import ChartComponets from "@/components/ChartComponets.vue";
-import AdminContentsView from "./AdminContentsView.vue";
+import AdminContentsView from "../components/admin/AdminContentsView.vue";
 import { User } from "../types/User";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";

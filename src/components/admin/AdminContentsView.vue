@@ -2,7 +2,7 @@
   <div>
     <template>
       <div>
-        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1" :search="search">
+        <v-data-table :headers="headers" :items="contents" item-key="id" class="elevation-1">
           <template v-slot:top>
             <v-row class="" justify="center">
               <v-col cols="3">
@@ -49,9 +49,10 @@
                   </v-row>
                 </v-container>
               </v-card-text>
+              <v-alert v-show="editItemWarningMessage" type="warning" class="mx-8">{{ editItemWarningMessage }}</v-alert>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Close </v-btn>
+                <v-btn color="blue darken-1" text @click="closeEditItem"> Close </v-btn>
                 <v-btn color="blue darken-1" text @click="saveEditItem"> Save </v-btn>
               </v-card-actions>
             </v-form>
@@ -74,9 +75,10 @@
                 </v-row>
               </v-container>
             </v-card-text>
+            <v-alert v-show="newItemWarningMessage" type="warning" class="mx-8">{{ newItemWarningMessage }}</v-alert>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="isNewItemDialog = false"> Close </v-btn>
+              <v-btn color="blue darken-1" text @click="closeNewItem"> Close </v-btn>
               <v-btn color="blue darken-1" text @click="saveNewItem"> Save </v-btn>
             </v-card-actions>
           </v-card>
@@ -89,7 +91,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
-import db from "../firebase/firestore";
+import db from "../../firebase/firestore";
 import { Getter, Mutation } from "vuex-class";
 
 type Content = {
@@ -112,7 +114,6 @@ export default class AdminContentsView extends Vue {
       { text: "操作", value: "actions" },
     ];
   }
-  search = "";
   contents: Content[] | undefined = [];
   titleFilterValue = "";
   descriptionFilterValue = "";
@@ -142,27 +143,53 @@ export default class AdminContentsView extends Vue {
     title: "",
     description: "",
   };
+  newItemWarningMessage = "";
   dialogEditItemData = {
     title: "",
     description: "",
   };
-
+  editItemWarningMessage = "";
   //NewItemDialogのロジック
   openNewItemDialog() {
     this.isNewItemDialog = true;
   }
 
+  hasEmptyProperty(object: any) {
+    for (let prop in object) {
+      if (object.hasOwnProperty(prop) && object[prop] === "") {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  clearNewItem() {
+    this.newItemWarningMessage = "";
+    this.dialogNewItemData.title = "";
+    this.dialogNewItemData.description = "";
+  }
+
+  closeNewItem() {
+    this.clearNewItem();
+    this.isNewItemDialog = false;
+  }
+
   async saveNewItem() {
+    if (this.hasEmptyProperty(this.dialogNewItemData)) {
+      this.newItemWarningMessage = "情報を入力してください";
+      return false;
+    }
     try {
       await addDoc(collection(db, "contents"), this.dialogNewItemData);
       this.setContents();
+      this.clearNewItem();
     } catch (error) {
       console.log(error);
+      this.clearNewItem();
     }
     this.isNewItemDialog = false;
   }
 
-  // EditDialogItemのロジック
   openEditItemDialog(item: Content) {
     this.isEditItemDialog = true;
     this.clearEditDialogItem;
@@ -170,6 +197,7 @@ export default class AdminContentsView extends Vue {
   }
 
   clearEditDialogItem() {
+    this.editItemWarningMessage = "";
     this.dialogEditItemData.title = "";
     this.dialogEditItemData.description = "";
   }
@@ -190,12 +218,22 @@ export default class AdminContentsView extends Vue {
     return updatedItem;
   }
 
+  closeEditItem() {
+    this.clearEditDialogItem();
+    this.isEditItemDialog = false;
+  }
+
   async saveEditItem() {
+    if (this.hasEmptyProperty(this.dialogEditItemData)) {
+      this.editItemWarningMessage = "情報を入力してください";
+      return false;
+    }
     const docRef = doc(db, "contents", this.dialogCurrentData.id);
     const updatedData = this.prioritizeUpdatedData();
     try {
       await updateDoc(docRef, updatedData);
       this.setContents();
+      this.clearEditDialogItem();
     } catch (error) {
       console.log(error);
     }
