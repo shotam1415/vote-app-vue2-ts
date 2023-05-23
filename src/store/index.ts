@@ -3,18 +3,36 @@ import Vuex from "vuex";
 
 Vue.use(Vuex);
 
+type Content = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+type StateType = {
+  currentUser: any;
+  isAuth: boolean;
+  contents: Content[];
+};
+
 export default new Vuex.Store({
   state: {
     currentUser: null,
     isAuth: false,
-    users: [],
-    contents: [],
+    contents: [
+      {
+        id: "",
+        title: "",
+        description: "",
+      },
+    ],
   },
   getters: {
-    currentUser: (state) => state.currentUser,
-    isAuth: (state) => state.isAuth,
-    users: (state) => state.users,
-    contents: (state) => state.contents,
+    currentUser: (state: StateType): any => state.currentUser,
+    isAuth: (state: StateType): boolean => state.isAuth,
+    currentContents(state: StateType): Content[] {
+      return state.contents;
+    },
   },
   mutations: {
     setCurrentUser(state, newCurrentUser) {
@@ -23,10 +41,7 @@ export default new Vuex.Store({
     setIsAuth(state, newIsAuth) {
       state.isAuth = newIsAuth;
     },
-    setUsers(state, newUsers) {
-      state.users = newUsers;
-    },
-    setContents(state, newUsers) {
+    setCurrentContents(state, newUsers) {
       state.contents = newUsers;
     },
   },
