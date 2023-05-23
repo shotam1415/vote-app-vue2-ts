@@ -49,9 +49,10 @@
                   </v-row>
                 </v-container>
               </v-card-text>
+              <v-alert v-show="editItemWarningMessage" type="warning" class="mx-8">{{ editItemWarningMessage }}</v-alert>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="isEditItemDialog = false"> Close </v-btn>
+                <v-btn color="blue darken-1" text @click="closeEditItem"> Close </v-btn>
                 <v-btn color="blue darken-1" text @click="saveEditItem"> Save </v-btn>
               </v-card-actions>
             </v-form>
@@ -74,7 +75,7 @@
                 </v-row>
               </v-container>
             </v-card-text>
-            <v-alert v-show="warningMessage" type="warning" class="mx-8">{{ warningMessage }}</v-alert>
+            <v-alert v-show="newItemWarningMessage" type="warning" class="mx-8">{{ newItemWarningMessage }}</v-alert>
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closeNewItem"> Close </v-btn>
@@ -142,11 +143,12 @@ export default class AdminContentsView extends Vue {
     title: "",
     description: "",
   };
+  newItemWarningMessage = "";
   dialogEditItemData = {
     title: "",
     description: "",
   };
-  warningMessage = "";
+  editItemWarningMessage = "";
   //NewItemDialogのロジック
   openNewItemDialog() {
     this.isNewItemDialog = true;
@@ -161,29 +163,29 @@ export default class AdminContentsView extends Vue {
     return false;
   }
 
-  resetNewItem() {
-    this.warningMessage = "";
+  clearNewItem() {
+    this.newItemWarningMessage = "";
     this.dialogNewItemData.title = "";
     this.dialogNewItemData.description = "";
   }
 
   closeNewItem() {
-    this.resetNewItem();
+    this.clearNewItem();
     this.isNewItemDialog = false;
   }
 
   async saveNewItem() {
     if (this.hasEmptyProperty(this.dialogNewItemData)) {
-      this.warningMessage = "情報を入力してください";
+      this.newItemWarningMessage = "情報を入力してください";
       return false;
     }
     try {
       await addDoc(collection(db, "contents"), this.dialogNewItemData);
       this.setContents();
-      this.resetNewItem();
+      this.clearNewItem();
     } catch (error) {
       console.log(error);
-      this.resetNewItem();
+      this.clearNewItem();
     }
     this.isNewItemDialog = false;
   }
@@ -195,6 +197,7 @@ export default class AdminContentsView extends Vue {
   }
 
   clearEditDialogItem() {
+    this.editItemWarningMessage = "";
     this.dialogEditItemData.title = "";
     this.dialogEditItemData.description = "";
   }
@@ -215,12 +218,22 @@ export default class AdminContentsView extends Vue {
     return updatedItem;
   }
 
+  closeEditItem() {
+    this.clearEditDialogItem();
+    this.isEditItemDialog = false;
+  }
+
   async saveEditItem() {
+    if (this.hasEmptyProperty(this.dialogEditItemData)) {
+      this.editItemWarningMessage = "情報を入力してください";
+      return false;
+    }
     const docRef = doc(db, "contents", this.dialogCurrentData.id);
     const updatedData = this.prioritizeUpdatedData();
     try {
       await updateDoc(docRef, updatedData);
       this.setContents();
+      this.clearEditDialogItem();
     } catch (error) {
       console.log(error);
     }
