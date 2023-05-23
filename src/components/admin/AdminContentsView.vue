@@ -91,7 +91,7 @@
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
-import db from "../firebase/firestore";
+import db from "../../firebase/firestore";
 import { Getter, Mutation } from "vuex-class";
 
 type Content = {
