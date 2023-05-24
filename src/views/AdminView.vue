@@ -3,43 +3,52 @@
     <v-card-title>
       <h1 class="display-1">管理画面</h1>
     </v-card-title>
-    <v-layout justify-space-between align-start>
-      <v-card height="400" width="256">
-        <v-navigation-drawer permanent>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title class="text-h6"> Application </v-list-item-title>
-              <v-list-item-subtitle> subtext </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list dense nav>
-            <v-list-item v-for="(item, index) in navItems" :key="item.title" link @click="changeNav(index)">
-              <v-list-item-icon>
-                <v-icon>{{ item.icon }}</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-navigation-drawer>
-      </v-card>
-      <v-container height="800" width="100%">
-        <v-list v-if="navNum === 0">
-          <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponent v-if="isShow" :chartData="chartData" :options="options" /></div>
-        </v-list>
-        <v-list v-if="navNum === 1">
-          <AdminContents />
-        </v-list>
-      </v-container>
+    <v-layout>
+      <v-row>
+        <v-col cols="12" sm="3">
+          <v-container>
+            <v-card>
+              <v-navigation-drawer permanent width="100%">
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title class="text-h6"> Application </v-list-item-title>
+                    <v-list-item-subtitle> subtext </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider></v-divider>
+                <v-list dense nav>
+                  <v-list-item v-for="(item, index) in navItems" :key="item.title" link @click="changeNav(index)">
+                    <v-list-item-icon>
+                      <v-icon>{{ item.icon }}</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-navigation-drawer>
+            </v-card>
+          </v-container>
+        </v-col>
+        <v-col cols="12" sm="9">
+          <v-container height="800" width="100%">
+            <v-list v-if="navNum === 0">
+              <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponent v-if="isShow" :chartData="chartData" :options="options" /></div>
+            </v-list>
+            <v-list v-if="navNum === 1">
+              <AdminContents />
+            </v-list>
+          </v-container>
+        </v-col>
+      </v-row>
     </v-layout>
   </div>
 </template>
 <style lang="scss">
 .chartWrap {
-  width: 800px;
-  height: 800px;
+  max-width: 800px;
+  width: 100%;
+  height: 400px;
   margin: auto;
   opacity: 0;
   pointer-events: none;
