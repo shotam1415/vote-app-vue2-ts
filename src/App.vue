@@ -8,8 +8,8 @@
         </div>
       </router-link>
       <v-spacer></v-spacer>
-      <v-btn text v-if="isCurrentUser">{{ isCurrentUser.name }}</v-btn>
-      <v-btn v-if="isCurrentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
+      <v-btn text v-if="currentUser">{{ currentUser.name }}</v-btn>
+      <v-btn v-if="currentUser" @click="signOutEvent" elevation="2" icon><v-icon>mdi-logout</v-icon></v-btn>
     </v-app-bar>
     <v-main>
       <router-view />
@@ -22,8 +22,7 @@ import { Vue, Component } from "vue-property-decorator";
 import { getAuth, signOut } from "firebase/auth";
 import { getDoc, doc } from "@firebase/firestore";
 import db from "./firebase/firestore";
-import { User } from "./types/User";
-import { Getter, Mutation } from "vuex-class";
+import { Getter } from "vuex-class";
 
 @Component
 export default class AppComponent extends Vue {
@@ -60,15 +59,13 @@ export default class AppComponent extends Vue {
     }
   }
 
-  @Getter isCurrentUser!: any;
+  @Getter currentUser!: any;
   @Getter isAuth!: boolean;
 
   async mounted() {
     this.auth.onAuthStateChanged(() => {
       this.getCurrentUser();
     });
-    console.log("this");
-    console.log(this.auth);
   }
 }
 </script>
