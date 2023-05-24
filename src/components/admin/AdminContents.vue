@@ -58,41 +58,18 @@
             </v-form>
           </v-card>
         </v-dialog>
-        <v-dialog v-model="isNewItemDialog" persistent max-width="600px" data-type="NewProfile">
-          <v-card>
-            <v-card-title>
-              <span class="text-h5">New Profile</span>
-            </v-card-title>
-            <v-card-text>
-              <v-container>
-                <v-row>
-                  <v-col cols="12">
-                    <v-text-field label="title" required v-model="dialogNewItemData.title"></v-text-field>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field label="description" required v-model="dialogNewItemData.description"></v-text-field>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-card-text>
-            <v-alert v-show="newItemWarningMessage" type="warning" class="mx-8">{{ newItemWarningMessage }}</v-alert>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeNewItem"> Close </v-btn>
-              <v-btn color="blue darken-1" text @click="saveNewItem"> Save </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <AdminContentsNewItem ref="childComponent" @childEmitSetContents="setContents" @childEmithasEmptyProperty="hasEmptyProperty" />
       </v-row>
     </template>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Ref } from "vue-property-decorator";
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
 import db from "../../firebase/firestore";
 import { Getter, Mutation } from "vuex-class";
+import AdminContentsNewItem from "../admin/modal/AdminContentsNewItem.vue";
 
 type Content = {
   id: string;
@@ -100,8 +77,12 @@ type Content = {
   description: string;
 };
 
-@Component
-export default class AdminContentsView extends Vue {
+@Component({
+  components: {
+    AdminContentsNewItem,
+  },
+})
+export default class AdminContents extends Vue {
   // v-data-table用変数
   get headers() {
     return [
@@ -130,7 +111,6 @@ export default class AdminContentsView extends Vue {
     return value.toLowerCase().includes(this.descriptionFilterValue.toLowerCase());
   }
   // モーダルのフラグ
-  isNewItemDialog = false;
   isEditItemDialog = false;
 
   // 入力データの格納先
@@ -139,19 +119,15 @@ export default class AdminContentsView extends Vue {
     title: "",
     description: "",
   };
-  dialogNewItemData = {
-    title: "",
-    description: "",
-  };
-  newItemWarningMessage = "";
   dialogEditItemData = {
     title: "",
     description: "",
   };
   editItemWarningMessage = "";
-  //NewItemDialogのロジック
+  @Ref() childComponent!: AdminContentsNewItem;
+
   openNewItemDialog() {
-    this.isNewItemDialog = true;
+    this.childComponent.openNewItemDialog();
   }
 
   hasEmptyProperty(object: any) {
@@ -161,33 +137,6 @@ export default class AdminContentsView extends Vue {
       }
     }
     return false;
-  }
-
-  clearNewItem() {
-    this.newItemWarningMessage = "";
-    this.dialogNewItemData.title = "";
-    this.dialogNewItemData.description = "";
-  }
-
-  closeNewItem() {
-    this.clearNewItem();
-    this.isNewItemDialog = false;
-  }
-
-  async saveNewItem() {
-    if (this.hasEmptyProperty(this.dialogNewItemData)) {
-      this.newItemWarningMessage = "情報を入力してください";
-      return false;
-    }
-    try {
-      await addDoc(collection(db, "contents"), this.dialogNewItemData);
-      this.setContents();
-      this.clearNewItem();
-    } catch (error) {
-      console.log(error);
-      this.clearNewItem();
-    }
-    this.isNewItemDialog = false;
   }
 
   openEditItemDialog(item: Content) {

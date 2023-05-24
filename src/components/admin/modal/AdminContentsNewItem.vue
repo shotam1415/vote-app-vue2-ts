@@ -1,0 +1,91 @@
+<template>
+  <v-dialog v-model="isNewItemDialog" persistent max-width="600px" data-type="NewProfile">
+    <v-card>
+      <v-card-title>
+        <span class="text-h5">New Profile</span>
+      </v-card-title>
+      <v-card-text>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-text-field label="title" required v-model="dialogNewItemData.title"></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field label="description" required v-model="dialogNewItemData.description"></v-text-field>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-card-text>
+      <v-alert v-show="newItemWarningMessage" type="warning" class="mx-8">{{ newItemWarningMessage }}</v-alert>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue darken-1" text @click="closeNewItem"> Close </v-btn>
+        <v-btn color="blue darken-1" text @click="saveNewItem"> Save </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script lang="ts">
+import { Component, Vue, Emit } from "vue-property-decorator";
+import { collection, addDoc } from "firebase/firestore";
+import db from "../../../firebase/firestore";
+import { Getter, Mutation } from "vuex-class";
+import { Content } from "../../../../src/types/Content";
+
+@Component
+export default class AdminContentsNewItem extends Vue {
+  //変数
+  dialogNewItemData = {
+    title: "",
+    description: "",
+  };
+  newItemWarningMessage = "";
+  isNewItemDialog = false;
+
+  @Getter currentContents!: Content[];
+  @Mutation("setCurrentContents") setCurrentContents!: (content: Content[]) => void;
+
+  @Emit("childEmitSetContents")
+  setContents() {
+    console.log("親コンポーネントのメソッド発火");
+  }
+
+  @Emit("childEmithasEmptyProperty")
+  hasEmptyProperty() {
+    console.log("親コンポーネントのメソッド発火");
+    return this.dialogNewItemData;
+  }
+
+  openNewItemDialog(): void {
+    this.isNewItemDialog = true;
+  }
+
+  clearNewItem() {
+    this.newItemWarningMessage = "";
+    this.dialogNewItemData.title = "";
+    this.dialogNewItemData.description = "";
+  }
+
+  closeNewItem() {
+    this.clearNewItem();
+    this.isNewItemDialog = false;
+  }
+
+  async saveNewItem() {
+    if (this.hasEmptyProperty()) {
+      this.newItemWarningMessage = "情報を入力してください";
+      return false;
+    }
+    try {
+      await addDoc(collection(db, "contents"), this.dialogNewItemData);
+      this.setContents();
+      this.clearNewItem();
+    } catch (error) {
+      console.log(error);
+      this.clearNewItem();
+    }
+    this.isNewItemDialog = false;
+  }
+}
+</script>
