@@ -25,40 +25,8 @@
     </template>
     <template>
       <v-row justify="center">
-        <v-dialog v-model="isEditItemDialog" persistent max-width="600px" data-type="EditProfile">
-          <v-card>
-            <v-form>
-              <v-card-title>
-                <span class="text-h5">Edit Profile</span>
-              </v-card-title>
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col cols="6">
-                      <v-text-field label="title(old)" readonly filled v-bind:value="dialogCurrentData.title"></v-text-field>
-                    </v-col>
-                    <v-col cols="6">
-                      <v-text-field label="title(new)" required v-model="dialogEditItemData.title"></v-text-field>
-                    </v-col>
-                    <v-col cols="6">
-                      <v-text-field label="description(old)" readonly filled v-bind:value="dialogCurrentData.description"></v-text-field>
-                    </v-col>
-                    <v-col cols="6">
-                      <v-text-field label="description(new)" required v-model="dialogEditItemData.description"></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-              <v-alert v-show="editItemWarningMessage" type="warning" class="mx-8">{{ editItemWarningMessage }}</v-alert>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeEditItem"> Close </v-btn>
-                <v-btn color="blue darken-1" text @click="saveEditItem"> Save </v-btn>
-              </v-card-actions>
-            </v-form>
-          </v-card>
-        </v-dialog>
-        <AdminContentsNewItem ref="childComponent" @childEmitSetContents="setContents" @childEmithasEmptyProperty="hasEmptyProperty" />
+        <NewItemComponent ref="newItemComponent" @childEmitSetContents="setContents" />
+        <EditItemComponent ref="editItemComponent" @childEmitSetContents="setContents" />
       </v-row>
     </template>
   </div>
@@ -66,24 +34,20 @@
 
 <script lang="ts">
 import { Component, Vue, Ref } from "vue-property-decorator";
-import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import db from "../../firebase/firestore";
 import { Getter, Mutation } from "vuex-class";
-import AdminContentsNewItem from "../admin/modal/AdminContentsNewItem.vue";
-
-type Content = {
-  id: string;
-  title: string;
-  description: string;
-};
+import NewItemComponent from "../admin/modal/NewItemComponent.vue";
+import EditItemComponent from "../admin/modal/EditItemComponent.vue";
+import { Content } from "@/types/Content";
 
 @Component({
   components: {
-    AdminContentsNewItem,
+    NewItemComponent,
+    EditItemComponent,
   },
 })
 export default class AdminContents extends Vue {
-  // v-data-table用変数
   get headers() {
     return [
       {
@@ -98,6 +62,7 @@ export default class AdminContents extends Vue {
   contents: Content[] | undefined = [];
   titleFilterValue = "";
   descriptionFilterValue = "";
+
   titleFilter(value: string) {
     if (!this.titleFilterValue) {
       return true;
@@ -110,83 +75,16 @@ export default class AdminContents extends Vue {
     }
     return value.toLowerCase().includes(this.descriptionFilterValue.toLowerCase());
   }
-  // モーダルのフラグ
-  isEditItemDialog = false;
 
-  // 入力データの格納先
-  dialogCurrentData = {
-    id: "",
-    title: "",
-    description: "",
-  };
-  dialogEditItemData = {
-    title: "",
-    description: "",
-  };
-  editItemWarningMessage = "";
-  @Ref() childComponent!: AdminContentsNewItem;
+  @Ref() newItemComponent!: NewItemComponent;
+  @Ref() editItemComponent!: EditItemComponent;
 
   openNewItemDialog() {
-    this.childComponent.openNewItemDialog();
-  }
-
-  hasEmptyProperty(object: any) {
-    for (let prop in object) {
-      if (object.hasOwnProperty(prop) && object[prop] === "") {
-        return true;
-      }
-    }
-    return false;
+    this.newItemComponent.openNewItemDialog();
   }
 
   openEditItemDialog(item: Content) {
-    this.isEditItemDialog = true;
-    this.clearEditDialogItem;
-    this.addDialogCurrentValue(item);
-  }
-
-  clearEditDialogItem() {
-    this.editItemWarningMessage = "";
-    this.dialogEditItemData.title = "";
-    this.dialogEditItemData.description = "";
-  }
-
-  addDialogCurrentValue(item: Content) {
-    this.dialogCurrentData.id = item.id;
-    this.dialogCurrentData.title = item.title;
-    this.dialogCurrentData.description = item.description;
-  }
-
-  prioritizeUpdatedData() {
-    const title = this.dialogEditItemData.title ? this.dialogEditItemData.title : this.dialogCurrentData.title;
-    const description = this.dialogEditItemData.description ? this.dialogEditItemData.description : this.dialogCurrentData.description;
-    const updatedItem = {
-      title: title,
-      description: description,
-    };
-    return updatedItem;
-  }
-
-  closeEditItem() {
-    this.clearEditDialogItem();
-    this.isEditItemDialog = false;
-  }
-
-  async saveEditItem() {
-    if (this.hasEmptyProperty(this.dialogEditItemData)) {
-      this.editItemWarningMessage = "情報を入力してください";
-      return false;
-    }
-    const docRef = doc(db, "contents", this.dialogCurrentData.id);
-    const updatedData = this.prioritizeUpdatedData();
-    try {
-      await updateDoc(docRef, updatedData);
-      this.setContents();
-      this.clearEditDialogItem();
-    } catch (error) {
-      console.log(error);
-    }
-    this.isEditItemDialog = false;
+    this.editItemComponent.openEditItemDialog(item);
   }
 
   async deleteItem(content_id: string) {
@@ -201,7 +99,6 @@ export default class AdminContents extends Vue {
     const contentRef = collection(db, "contents");
     const contentQuerySnapshot = await getDocs(contentRef);
     const contents = contentQuerySnapshot.docs.map((doc) => {
-      console.log(doc);
       const data = doc.data();
       const content: Content = {
         id: doc.id,

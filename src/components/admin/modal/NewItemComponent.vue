@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isNewItemDialog" persistent max-width="600px" data-type="NewProfile">
+  <v-dialog v-model="isNewItemDialog" persistent max-width="600px">
     <v-card>
       <v-card-title>
         <span class="text-h5">New Profile</span>
@@ -48,13 +48,16 @@ export default class AdminContentsNewItem extends Vue {
 
   @Emit("childEmitSetContents")
   setContents() {
-    console.log("親コンポーネントのメソッド発火");
+    console.log("setContents");
   }
 
-  @Emit("childEmithasEmptyProperty")
-  hasEmptyProperty() {
-    console.log("親コンポーネントのメソッド発火");
-    return this.dialogNewItemData;
+  hasEmptyProperty(object: any) {
+    for (let prop in object) {
+      if (object.hasOwnProperty(prop) && object[prop] === "") {
+        return true;
+      }
+    }
+    return false;
   }
 
   openNewItemDialog(): void {
@@ -73,7 +76,7 @@ export default class AdminContentsNewItem extends Vue {
   }
 
   async saveNewItem() {
-    if (this.hasEmptyProperty()) {
+    if (this.hasEmptyProperty(this.dialogNewItemData)) {
       this.newItemWarningMessage = "情報を入力してください";
       return false;
     }
