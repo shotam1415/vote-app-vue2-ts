@@ -3,7 +3,7 @@ import Vuetify from "vuetify";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
 import "../../src/firebase/firebase";
-import AdminContentsView from "@/views/AdminContentsView.vue";
+import AdminContents from "@/views/AdminContents.vue";
 
 //vuetifyの警告回避
 const localVue = createLocalVue();
@@ -43,7 +43,7 @@ const headers = {
 };
 
 //投票済判定
-const wrapper = mount(AdminContentsView, {
+const wrapper = mount(AdminContents, {
   localVue,
   vuetify,
   router,
@@ -77,7 +77,7 @@ const wrapper = mount(AdminContentsView, {
   },
 });
 
-describe("AdminContentsView.vue", () => {
+describe("AdminContents.vue", () => {
   it("レンダリングされるかどうか", async () => {
     expect(wrapper.exists()).toBe(true);
   });

@@ -30,7 +30,7 @@
           <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponets v-if="isShow" :chartData="chartData" :options="options" /></div>
         </v-list>
         <v-list v-if="navNum === 1">
-          <AdminContentsView />
+          <AdminContents />
         </v-list>
       </v-container>
     </v-layout>
@@ -65,7 +65,7 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import ChartComponets from "@/components/ChartComponets.vue";
-import AdminContentsView from "../components/admin/AdminContentsView.vue";
+import AdminContents from "../components/admin/AdminContents.vue";
 import { User } from "../types/User";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
@@ -79,7 +79,7 @@ type plans = {
 @Component({
   components: {
     ChartComponets,
-    AdminContentsView,
+    AdminContents,
   },
 })
 export default class AdminViewComponent extends Vue {
