@@ -1,6 +1,6 @@
 <template>
   <v-container class="pt-16">
-    <v-card max-width="400px" class="mx-auto py-10 px-10">
+    <v-card max-width="600px" class="mx-auto py-16 px-16">
       <v-row justify="center" class="mb-16">
         <h2 class="display-h2">投票ページへようこそ</h2>
       </v-row>
