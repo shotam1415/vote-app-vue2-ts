@@ -1,7 +1,7 @@
 <template>
-  <div class="admin" v-if="currentUser?.role === 0">
+  <v-container class="pt-16" v-if="currentUser?.role === 0">
     <v-card-title>
-      <h1 class="display-1">管理画面</h1>
+      <h2 class="display-h2">管理画面</h2>
     </v-card-title>
     <v-layout>
       <v-row>
@@ -20,7 +20,7 @@
         </v-col>
       </v-row>
     </v-layout>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -46,13 +46,11 @@ type plans = {
   },
 })
 export default class AdminViewComponent extends Vue {
-  // 変数
   navNum = 0;
   isShow = false;
   plans: plans[] = [];
   chartLabel: string[] = [];
   chartTotal: number[] = [];
-
   chartData = {
     labels: this.chartLabel,
     datasets: [
@@ -67,6 +65,7 @@ export default class AdminViewComponent extends Vue {
   options = {
     responsive: true,
     maintainAspectRatio: false,
+    scales: { yAxes: [{ ticks: { beginAtZero: true } }] },
   };
   @Getter currentUser!: any;
 
@@ -85,23 +84,6 @@ export default class AdminViewComponent extends Vue {
     return plans;
   }
 
-  async getPublicVotedTitleList() {
-    const publicVotesRef = collection(db, "public_votes");
-    const publicVotesSnapshot = await getDocs(publicVotesRef);
-    const publicVotedTitleList = publicVotesSnapshot.docs.map((doc) => {
-      const data = doc.data();
-      const votedPlanTitle = data.plans_title;
-      return votedPlanTitle;
-    });
-    publicVotedTitleList.map((item) => {
-      for (let i = 0; i < this.plans.length; i++) {
-        if (item === this.plans[i].title) {
-          this.plans[i].count += 1;
-        }
-      }
-    });
-  }
-
   async getVotedChartData() {
     // dbからプランを取得
     this.plans = await this.getPlans();
@@ -118,7 +100,25 @@ export default class AdminViewComponent extends Vue {
     for (let i = 0; i < this.plans.length; i++) {
       this.chartTotal[i] = this.plans[i].count;
     }
+
     this.isShow = true;
+  }
+
+  async getPublicVotedTitleList() {
+    const publicVotesRef = collection(db, "public_votes");
+    const publicVotesSnapshot = await getDocs(publicVotesRef);
+    const publicVotedTitleList = publicVotesSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const votedPlanTitle = data.plans_title;
+      return votedPlanTitle;
+    });
+    publicVotedTitleList.map((item) => {
+      for (let i = 0; i < this.plans.length; i++) {
+        if (item === this.plans[i].title) {
+          this.plans[i].count += 1;
+        }
+      }
+    });
   }
 
   onChangeLoadingStatus() {
