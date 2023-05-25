@@ -43,7 +43,7 @@
     </v-container>
   </div>
 </template>
-<style lang="scss">
+<style lang="scss" scoped>
 .v-card {
   transition: opacity 0.4s ease-in-out;
   cursor: pointer;
@@ -83,6 +83,64 @@ export default class VoteViewComponent extends Vue {
   isUsersVotesCollection = false;
   plans: Plan[] = [];
 
+  @Getter currentUser!: User | undefined;
+
+  //「投票する」のロジック
+  async insertVote() {
+    if (this.isVoting) {
+      return false;
+    }
+    this.isVoting = true;
+
+    if (!this.currentUser) {
+      await this.showVotedMessage("warning", "投票するには会員登録が必要です。");
+      this.isVoting = false;
+      return false;
+    }
+
+    // データ挿入
+    if (this.isUsersVotesCollection) {
+      await this.showVotedMessage("error", "投票は一度しかできません。");
+      this.isVoting = false;
+      return false;
+    }
+
+    const user_id = this.currentUser.id;
+    const user_name = this.currentUser.name;
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // 両方のドキュメントをトランザクション内で追加
+        this.insertUsersVote(user_id, transaction);
+        this.insertPublicVote(user_name, transaction);
+        console.log("Transaction successful");
+        await this.showVotedMessage("success", "投票が完了しました。");
+        this.isUsersVotesCollection = true;
+        this.isVoting = false;
+      });
+    } catch (error) {
+      // 片方の処理がエラーだった場合
+      console.error("Transaction failed: ", error);
+      await this.showVotedMessage("error", "投票エラーです。");
+      this.isVoting = false;
+    }
+  }
+
+  async showVotedMessage(type: string, message: string) {
+    switch (type) {
+      case "success":
+        console.log("success");
+        this.successMessage = message;
+      case "warning":
+        console.log("warning");
+        this.warningMessage = message;
+      case "error":
+        console.log("error");
+        this.errorMessage = message;
+    }
+  }
+
+  //プランデータ取得
   async getPlans() {
     const planRef = collection(db, "plans");
     const planQuerySnapshot = await getDocs(planRef);
@@ -99,6 +157,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
+  //Usersのサブコレクションへ投票データ挿入
   async insertUsersVote(user_id: string, transaction: Transaction) {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
@@ -110,6 +169,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
+  //Votesコレクションへ投票データ挿入
   async insertPublicVote(user_name: string, transaction: Transaction) {
     const votesPath = collection(db, "public_votes");
     const votesRef = doc(votesPath, this.selectedPlan.id);
@@ -121,53 +181,13 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
+  //投票の有無の判定
   async isUsersVotes(user_id: string) {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
     const usersVotesSnapshot = await getDocs(usersVotesCollectionPathDoc);
     return !usersVotesSnapshot.empty;
   }
-
-  async insertVote() {
-    if (this.isVoting) {
-      return false;
-    }
-    this.isVoting = true;
-
-    if (!this.currentUser) {
-      this.warningMessage = "投票するには会員登録が必要です。";
-      this.isVoting = false;
-      return false;
-    }
-
-    // データ挿入
-    if (this.isUsersVotesCollection) {
-      this.errorMessage = "既に投票すみです。";
-      this.isVoting = false;
-      return false;
-    }
-
-    const user_id = this.currentUser.id;
-    const user_name = this.currentUser.name;
-
-    try {
-      await runTransaction(db, async (transaction) => {
-        // 両方のドキュメントをトランザクション内で追加
-        this.insertUsersVote(user_id, transaction);
-        this.insertPublicVote(user_name, transaction);
-        console.log("Transaction successful");
-        this.successMessage = "投票が完了しました。";
-        this.isUsersVotesCollection = true;
-        this.isVoting = false;
-      });
-    } catch (error) {
-      // 片方の処理がエラーだった場合
-      console.error("Transaction failed: ", error);
-      this.isVoting = false;
-    }
-  }
-
-  @Getter currentUser!: User | undefined;
 
   mounted() {
     this.getPlans();
