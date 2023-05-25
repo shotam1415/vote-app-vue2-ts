@@ -1,32 +1,30 @@
 <template>
-  <div class="signup" v-if="!currentUser">
-    <v-container>
-      <v-card maxWidth="400px" class="mx-auto mt-5">
-        <v-card-title>
-          <h1 class="display-1">会員登録</h1>
-        </v-card-title>
-        <v-card-text>
-          <v-form>
-            <v-text-field prepend-icon="mdi-account-circle" type="text" label="ニックネーム" v-model="userModel.name" />
-            <v-text-field prepend-icon="mdi-email-outline" type="email" label="メールアドレス" v-model="userModel.email" />
-            <v-text-field
-              @click:append="showPassword = !showPassword"
-              v-bind:append-icon="!showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-              v-bind:type="showPassword ? 'text' : 'password'"
-              prepend-icon="mdi-lock"
-              label="パスワード"
-              v-model="userModel.password"
-            />
-            <v-card-actions>
-              <v-btn v-bind:loading="isLoading" v-bind:disabled="isLoading" @click="signup">会員登録</v-btn>
-              <router-link to="/signin" class=""><v-btn color="blue lighten-2" text> ログインはこちら </v-btn></router-link>
-            </v-card-actions>
-          </v-form>
-          <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
-        </v-card-text>
-      </v-card>
-    </v-container>
-  </div>
+  <v-container class="pt-16" v-if="!currentUser">
+    <v-card maxWidth="600px" class="mx-auto px-4 py-4">
+      <v-card-title>
+        <h2 class="display-h2">会員登録</h2>
+      </v-card-title>
+      <v-card-text>
+        <v-form>
+          <v-text-field prepend-icon="mdi-account-circle" type="text" label="ニックネーム" v-model="userModel.name" />
+          <v-text-field prepend-icon="mdi-email-outline" type="email" label="メールアドレス" v-model="userModel.email" />
+          <v-text-field
+            @click:append="showPassword = !showPassword"
+            v-bind:append-icon="!showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            v-bind:type="showPassword ? 'text' : 'password'"
+            prepend-icon="mdi-lock"
+            label="パスワード"
+            v-model="userModel.password"
+          />
+          <v-card-actions>
+            <v-btn v-bind:loading="isLoading" v-bind:disabled="isLoading" @click="signup">会員登録</v-btn>
+            <router-link to="/signin" class="ml-4"><v-btn color="blue lighten-2" text> ログインはこちら </v-btn></router-link>
+          </v-card-actions>
+        </v-form>
+        <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
+      </v-card-text>
+    </v-card>
+  </v-container>
 </template>
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
@@ -80,7 +78,7 @@ export default class SignInView extends Vue {
   @Getter currentUser!: User | undefined;
 
   async mounted() {
-    // ユーザーの権限判定
+    // ログイン済なら投票画面へ遷移させる
     getAuth().onAuthStateChanged(() => {
       if (!this.currentUser) {
         return false;

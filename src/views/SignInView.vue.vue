@@ -58,7 +58,7 @@ export default class SignInView extends Vue {
 
   @Getter currentUser!: User | undefined;
   async mounted() {
-    // ユーザーの権限判定
+    // ログイン済なら投票画面へ遷移させる
     getAuth().onAuthStateChanged(() => {
       if (!this.currentUser) {
         return false;
