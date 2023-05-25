@@ -1,28 +1,30 @@
 <template>
-  <div class="signin" v-if="!isSignin">
-    <v-card width="400px" class="mx-auto mt-5">
-      <v-card-title>
-        <h1 class="display-1">ログイン</h1>
-      </v-card-title>
-      <v-card-text>
-        <v-form>
-          <v-text-field prepend-icon="mdi-account-circle" type="email" label="メールアドレス" v-model="email" />
-          <v-text-field
-            @click:append="showPassword = !showPassword"
-            v-bind:append-icon="!showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-            v-bind:type="showPassword ? 'text' : 'password'"
-            prepend-icon="mdi-lock"
-            label="パスワード"
-            v-model="password"
-          />
-          <v-card-actions>
-            <v-btn v-bind:loading="isSignin" v-bind:disabled="isSignin" @click="signin">ログイン</v-btn>
-            <router-link to="/signup" class=""><v-btn color="blue lighten-2" text>会員登録はこちら </v-btn></router-link>
-          </v-card-actions>
-        </v-form>
-        <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
-      </v-card-text>
-    </v-card>
+  <div v-if="!currentUser">
+    <v-container>
+      <v-card maxWidth="400px" class="mx-auto mt-5">
+        <v-card-title>
+          <h1 class="display-1">ログイン</h1>
+        </v-card-title>
+        <v-card-text>
+          <v-form>
+            <v-text-field prepend-icon="mdi-account-circle" type="email" label="メールアドレス" v-model="email" />
+            <v-text-field
+              @click:append="showPassword = !showPassword"
+              v-bind:append-icon="!showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              v-bind:type="showPassword ? 'text' : 'password'"
+              prepend-icon="mdi-lock"
+              label="パスワード"
+              v-model="password"
+            />
+            <v-card-actions>
+              <v-btn v-bind:loading="currentUser" v-bind:disabled="currentUser" @click="signIn">ログイン</v-btn>
+              <router-link to="/signup" class=""><v-btn color="blue lighten-2" text>会員登録はこちら </v-btn></router-link>
+            </v-card-actions>
+          </v-form>
+          <v-alert type="error" v-show="errorMessage">{{ errorMessage }}</v-alert>
+        </v-card-text>
+      </v-card>
+    </v-container>
   </div>
 </template>
 <script lang="ts">
@@ -30,6 +32,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { convertErrorCode } from "../lib/convertErrorCode";
 import { User } from "../types/User";
+import { Getter } from "vuex-class";
 
 @Component
 export default class SigninView extends Vue {
@@ -41,7 +44,7 @@ export default class SigninView extends Vue {
   isLoading = false;
 
   // methods
-  async signin() {
+  async signIn() {
     // Todo ボタン２度押しされないようにする
     this.isLoading = true;
     try {
@@ -59,20 +62,15 @@ export default class SigninView extends Vue {
     }
   }
 
-  // store:getter
-  get isSignin(): User | undefined {
-    if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser;
-    }
-  }
+  @Getter currentUser!: User | undefined;
 
   async mounted() {
     // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
-      if (!this.isSignin) {
+      if (!this.currentUser) {
         return false;
       }
-      if (this.isSignin) {
+      if (this.currentUser) {
         this.$router.push("/vote");
       }
     });

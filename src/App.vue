@@ -23,19 +23,21 @@ import { getAuth, signOut } from "firebase/auth";
 import { getDoc, doc } from "@firebase/firestore";
 import db from "./firebase/firestore";
 import { Getter } from "vuex-class";
+import { User } from "@/types/User";
 
 @Component
 export default class AppComponent extends Vue {
   // 変数
   auth = getAuth();
+  isAuth = false;
 
   // methods
   async signOutEvent() {
     try {
       await signOut(this.auth);
       this.$store.commit("setCurrentUser", null);
-      this.$router.push("/signin").catch(() => {
-        console.log("error");
+      await this.$router.push({ name: "home" }).catch(() => {
+        // do nothing.
       });
     } catch (error) {
       console.error(error);
@@ -48,21 +50,19 @@ export default class AppComponent extends Vue {
       const usersRef = doc(db, "users", userId);
       const userSnap = await getDoc(usersRef);
       if (userSnap.exists()) {
-        console.log("Document data:", userSnap.data());
         const CurrentUser = userSnap.data();
         CurrentUser.id = userId;
         this.$store.commit("setCurrentUser", CurrentUser);
-        this.$store.commit("setIsAuth", true);
+        this.isAuth = true;
       } else {
-        this.$store.commit("setIsAuth", true);
+        this.isAuth = true;
       }
     } else {
-      this.$store.commit("setIsAuth", true);
+      this.isAuth = true;
     }
   }
 
-  @Getter currentUser!: any;
-  @Getter isAuth!: boolean;
+  @Getter currentUser!: User | undefined;
 
   async mounted() {
     this.auth.onAuthStateChanged(() => {
