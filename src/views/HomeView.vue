@@ -17,11 +17,9 @@
 import { Component, Vue } from "vue-property-decorator";
 import { User } from "../types/User";
 import { Getter } from "vuex-class";
-import { getAuth } from "firebase/auth";
 
 @Component
 export default class HomeView extends Vue {
   @Getter currentUser!: User | undefined;
-  auth = getAuth();
 }
 </script>
