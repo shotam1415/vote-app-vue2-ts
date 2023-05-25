@@ -34,8 +34,8 @@ export default class AppComponent extends Vue {
     try {
       await signOut(this.auth);
       this.$store.commit("setCurrentUser", null);
-      this.$router.push("/signin").catch(() => {
-        console.log("error");
+      await this.$router.push({ name: "home" }).catch(() => {
+        // do nothing.
       });
     } catch (error) {
       console.error(error);
