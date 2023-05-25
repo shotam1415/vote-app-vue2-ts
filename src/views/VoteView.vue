@@ -4,58 +4,60 @@
       <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
       <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
       <v-alert v-show="warningMessage" type="warning">{{ warningMessage }}<router-link to="/signup">こちらより</router-link>会員登録をお願いします。</v-alert>
-      <v-row :justify="justifycontent.center">
-        <v-col
-          cols="5"
-          v-for="plan in plans"
-          :key="plan.title"
-          @click="
-            selectedPlan.id = plan.id;
-            selectedPlan.title = plan.title;
-          "
-        >
-          <div :class="{ isPlanActive: selectedPlan.id === plan.id }" class="isPlan">
-            <v-card class="mx-auto" max-width="344">
-              <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
-              <v-card-title>{{ plan.title }}</v-card-title>
-              <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
-            </v-card>
-          </div>
+      <v-container>
+        <v-row justify="center">
+          <v-col sm="5" cols="12" v-for="plan in plans" :key="plan.title">
+            <v-hover v-slot="{ hover }">
+              <v-card
+                class="mx-auto"
+                max-width="350"
+                :class="[{ 'on-hover': hover }, { isPlanActive: selectedPlan.id === plan.id }]"
+                @click="
+                  selectedPlan.id = plan.id;
+                  selectedPlan.title = plan.title;
+                "
+              >
+                <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
+                <v-card-title>{{ plan.title }}</v-card-title>
+                <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
+              </v-card>
+            </v-hover>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-container>
+    <v-container>
+      <v-row>
+        <v-col sm="4" cols="12" class="mx-auto">
+          <v-btn v-bind:loading="isVoting" block v-bind:disabled="!selectedPlan.id || isVoting" @click="insertVote">投票する</v-btn>
         </v-col>
       </v-row>
     </v-container>
-    <div class="btnWrap">
-      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!selectedPlan.id || isVoting" @click="insertVote">投票する</v-btn>
-    </div>
-    <div class="note">
+    <v-container>
       <p>Cardのサムネイルに使用している画像の引用先</p>
       著作者：<a
         target="_blank"
         href="https://jp.freepik.com/free-vector/flat-neon-gaming-youtube-thumbnail_33809384.htm#query=%E3%82%B5%E3%83%A0%E3%83%8D%E3%82%A4%E3%83%AB&position=49&from_view=keyword&track=sph"
         >Freepik</a
       >
-    </div>
+    </v-container>
   </div>
 </template>
-
-<style lang="scss">
-.btnWrap {
-  max-width: 400px;
-  margin: 0 auto;
+<style lang="scss" scoped>
+.v-card {
+  transition: opacity 0.4s ease-in-out;
+  cursor: pointer;
+}
+.v-card:not(.on-hover) {
+  opacity: 0.6;
 }
 
-.note {
-  text-align: center;
-}
-.isPlan {
-  margin: 0 auto;
-  max-width: 344px;
-  border-radius: 4px;
-  border: solid 2px white;
+.show-btns {
+  color: rgba(255, 255, 255, 1) !important;
 }
 
 .isPlanActive {
-  border: solid 2px red;
+  opacity: 1 !important;
 }
 </style>
 
@@ -65,6 +67,7 @@ import { collection, getDocs, runTransaction, doc, Transaction } from "firebase/
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 import { User } from "../types/User";
+import { Getter } from "vuex-class";
 
 @Component
 export default class VoteViewComponent extends Vue {
@@ -77,12 +80,79 @@ export default class VoteViewComponent extends Vue {
     id: "",
     title: "",
   };
-  justifycontent = {
-    center: "center",
-  };
   isUsersVotesCollection = false;
   plans: Plan[] = [];
 
+  @Getter currentUser!: User | undefined;
+
+  //「投票する」のロジック
+  async insertVote() {
+    //投票中の判定
+    if (this.isVoting) {
+      console.log("this.isVoting");
+      await this.showVotedMessage("error", "投票処理中ですのでお待ちください。");
+      return false;
+    }
+    this.isVoting = true;
+
+    if (!this.currentUser) {
+      console.log("this.currentUser");
+      await this.showVotedMessage("warning", "投票するには会員登録が必要です。");
+      this.isVoting = false;
+      return false;
+    }
+
+    // データ挿入
+    if (this.isUsersVotesCollection) {
+      console.log("this.isUsersVotesCollection");
+      await this.showVotedMessage("error", "投票は一度しかできません。");
+      this.isVoting = false;
+      return false;
+    }
+
+    const user_id = this.currentUser.id;
+    const user_name = this.currentUser.name;
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // 両方のドキュメントをトランザクション内で追加
+        this.insertUsersVote(user_id, transaction);
+        this.insertPublicVote(user_name, transaction);
+        console.log("Transaction successful");
+        console.log("runTransaction");
+        await this.showVotedMessage("success", "投票が完了しました。");
+        this.isUsersVotesCollection = true;
+        this.isVoting = false;
+      });
+    } catch (error) {
+      // 片方の処理がエラーだった場合
+      console.error("Transaction failed: ", error);
+      console.log("Transaction failed");
+      await this.showVotedMessage("error", "投票エラーです。");
+      this.isVoting = false;
+    }
+  }
+
+  //エラーメッセージの表示
+  async showVotedMessage(type: string, message: string) {
+    switch (type) {
+      case "success":
+        console.log("success");
+        this.successMessage = message;
+        break;
+      case "warning":
+        console.log("warning");
+        this.warningMessage = message;
+        break;
+      case "error":
+        console.log("error");
+        this.errorMessage = message;
+        break;
+      default:
+    }
+  }
+
+  //プランデータ取得
   async getPlans() {
     const planRef = collection(db, "plans");
     const planQuerySnapshot = await getDocs(planRef);
@@ -99,6 +169,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
+  //Usersのサブコレクションへ投票データ挿入
   async insertUsersVote(user_id: string, transaction: Transaction) {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
@@ -110,6 +181,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
+  //Votesコレクションへ投票データ挿入
   async insertPublicVote(user_name: string, transaction: Transaction) {
     const votesPath = collection(db, "public_votes");
     const votesRef = doc(votesPath, this.selectedPlan.id);
@@ -121,6 +193,7 @@ export default class VoteViewComponent extends Vue {
     });
   }
 
+  //投票の有無の判定
   async isUsersVotes(user_id: string) {
     const usersVotesCollectionPath = `users/${user_id}/users_votes/`;
     const usersVotesCollectionPathDoc = collection(db, usersVotesCollectionPath);
@@ -128,57 +201,15 @@ export default class VoteViewComponent extends Vue {
     return !usersVotesSnapshot.empty;
   }
 
-  async insertVote() {
-    if (this.isVoting) {
-      return false;
-    }
-    this.isVoting = true;
-
-    if (!this.isCurrentUser) {
-      this.warningMessage = "投票するには会員登録が必要です。";
-      this.isVoting = false;
-      return false;
-    }
-
-    // データ挿入
-    if (this.isUsersVotesCollection) {
-      this.errorMessage = "既に投票すみです。";
-      this.isVoting = false;
-      return false;
-    }
-
-    const user_id = this.isCurrentUser.id;
-    const user_name = this.isCurrentUser.name;
-
-    try {
-      await runTransaction(db, async (transaction) => {
-        // 両方のドキュメントをトランザクション内で追加
-        this.insertUsersVote(user_id, transaction);
-        this.insertPublicVote(user_name, transaction);
-        console.log("Transaction successful");
-        this.successMessage = "投票が完了しました。";
-        this.isUsersVotesCollection = true;
-        this.isVoting = false;
-      });
-    } catch (error) {
-      // 片方の処理がエラーだった場合
-      console.error("Transaction failed: ", error);
-      this.isVoting = false;
-    }
-  }
-  get isCurrentUser(): User | undefined {
-    if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser;
-    }
-  }
   mounted() {
     this.getPlans();
     const getIsUsersVotes = async () => {
-      if (this.isCurrentUser) {
-        this.isUsersVotesCollection = await this.isUsersVotes(this.isCurrentUser.id);
+      if (this.currentUser) {
+        this.isUsersVotesCollection = await this.isUsersVotes(this.currentUser.id);
       }
     };
     getIsUsersVotes();
+    console.log(this.currentUser);
   }
 }
 </script>
