@@ -87,12 +87,16 @@ export default class VoteViewComponent extends Vue {
 
   //「投票する」のロジック
   async insertVote() {
+    //投票中の判定
     if (this.isVoting) {
+      console.log("this.isVoting");
+      await this.showVotedMessage("error", "投票処理中ですのでお待ちください。");
       return false;
     }
     this.isVoting = true;
 
     if (!this.currentUser) {
+      console.log("this.currentUser");
       await this.showVotedMessage("warning", "投票するには会員登録が必要です。");
       this.isVoting = false;
       return false;
@@ -100,6 +104,7 @@ export default class VoteViewComponent extends Vue {
 
     // データ挿入
     if (this.isUsersVotesCollection) {
+      console.log("this.isUsersVotesCollection");
       await this.showVotedMessage("error", "投票は一度しかできません。");
       this.isVoting = false;
       return false;
@@ -114,6 +119,7 @@ export default class VoteViewComponent extends Vue {
         this.insertUsersVote(user_id, transaction);
         this.insertPublicVote(user_name, transaction);
         console.log("Transaction successful");
+        console.log("runTransaction");
         await this.showVotedMessage("success", "投票が完了しました。");
         this.isUsersVotesCollection = true;
         this.isVoting = false;
@@ -121,22 +127,28 @@ export default class VoteViewComponent extends Vue {
     } catch (error) {
       // 片方の処理がエラーだった場合
       console.error("Transaction failed: ", error);
+      console.log("Transaction failed");
       await this.showVotedMessage("error", "投票エラーです。");
       this.isVoting = false;
     }
   }
 
+  //エラーメッセージの表示
   async showVotedMessage(type: string, message: string) {
     switch (type) {
       case "success":
         console.log("success");
         this.successMessage = message;
+        break;
       case "warning":
         console.log("warning");
         this.warningMessage = message;
+        break;
       case "error":
         console.log("error");
         this.errorMessage = message;
+        break;
+      default:
     }
   }
 
@@ -197,6 +209,7 @@ export default class VoteViewComponent extends Vue {
       }
     };
     getIsUsersVotes();
+    console.log(this.currentUser);
   }
 }
 </script>
