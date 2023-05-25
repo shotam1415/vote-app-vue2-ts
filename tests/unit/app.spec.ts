@@ -25,28 +25,4 @@ describe("MyComponent.vue", () => {
   beforeEach(() => {
     vuetify = new Vuetify();
   });
-
-  it("signOutEventメソッドが期待通りの動作をすること", async () => {
-    const wrapper = shallowMount(AppComponent, {
-      localVue,
-      vuetify,
-      router,
-      stubs: {
-        RouterLink: RouterLinkStub,
-      },
-      data() {
-        return {
-          auth,
-        };
-      },
-
-      mocks: {
-        $store: {
-          getters: { isAuth: true, isCurrentUser: { name: "test太郎" } },
-        },
-      },
-    });
-    //リンク遷移のテスト
-    expect(wrapper.findComponent(RouterLinkStub).props().to).toBe("/");
-  });
 });

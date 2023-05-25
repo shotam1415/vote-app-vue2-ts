@@ -2,7 +2,7 @@
   <v-dialog v-model="isNewItemDialog" persistent max-width="600px">
     <v-card>
       <v-card-title>
-        <span class="text-h5">New Profile</span>
+        <span class="text-h5">New Item</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -35,7 +35,6 @@ import { Content } from "../../../../src/types/Content";
 
 @Component
 export default class AdminContentsNewItem extends Vue {
-  //変数
   dialogNewItemData = {
     title: "",
     description: "",
@@ -49,6 +48,27 @@ export default class AdminContentsNewItem extends Vue {
   @Emit("childEmitSetContents")
   setContents() {
     console.log("setContents");
+  }
+
+  //保存
+  async saveNewItem() {
+    //入力欄を判定
+    if (this.hasEmptyProperty(this.dialogNewItemData)) {
+      this.newItemWarningMessage = "情報を入力してください";
+      return false;
+    }
+    try {
+      await addDoc(collection(db, "contents"), this.dialogNewItemData);
+      //挿入後ストアを更新
+      this.setContents();
+      //入力情報クリア
+      this.clearNewItem();
+    } catch (error) {
+      console.log(error);
+      //入力情報クリア
+      this.clearNewItem();
+    }
+    this.isNewItemDialog = false;
   }
 
   hasEmptyProperty(object: any) {
@@ -72,22 +92,6 @@ export default class AdminContentsNewItem extends Vue {
 
   closeNewItem() {
     this.clearNewItem();
-    this.isNewItemDialog = false;
-  }
-
-  async saveNewItem() {
-    if (this.hasEmptyProperty(this.dialogNewItemData)) {
-      this.newItemWarningMessage = "情報を入力してください";
-      return false;
-    }
-    try {
-      await addDoc(collection(db, "contents"), this.dialogNewItemData);
-      this.setContents();
-      this.clearNewItem();
-    } catch (error) {
-      console.log(error);
-      this.clearNewItem();
-    }
     this.isNewItemDialog = false;
   }
 }

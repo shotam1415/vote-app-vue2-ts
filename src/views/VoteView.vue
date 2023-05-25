@@ -1,5 +1,5 @@
 <template>
-  <div class="vote">
+  <div>
     <v-container>
       <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
       <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
@@ -71,7 +71,6 @@ import { Getter } from "vuex-class";
 
 @Component
 export default class VoteViewComponent extends Vue {
-  //変数
   successMessage = "";
   errorMessage = "";
   warningMessage = "";
@@ -95,6 +94,7 @@ export default class VoteViewComponent extends Vue {
     }
     this.isVoting = true;
 
+    //ログイン中かどうかの判定
     if (!this.currentUser) {
       console.log("this.currentUser");
       await this.showVotedMessage("warning", "投票するには会員登録が必要です。");
@@ -118,8 +118,6 @@ export default class VoteViewComponent extends Vue {
         // 両方のドキュメントをトランザクション内で追加
         this.insertUsersVote(user_id, transaction);
         this.insertPublicVote(user_name, transaction);
-        console.log("Transaction successful");
-        console.log("runTransaction");
         await this.showVotedMessage("success", "投票が完了しました。");
         this.isUsersVotesCollection = true;
         this.isVoting = false;
@@ -127,7 +125,6 @@ export default class VoteViewComponent extends Vue {
     } catch (error) {
       // 片方の処理がエラーだった場合
       console.error("Transaction failed: ", error);
-      console.log("Transaction failed");
       await this.showVotedMessage("error", "投票エラーです。");
       this.isVoting = false;
     }
@@ -209,7 +206,6 @@ export default class VoteViewComponent extends Vue {
       }
     };
     getIsUsersVotes();
-    console.log(this.currentUser);
   }
 }
 </script>

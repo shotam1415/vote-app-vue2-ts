@@ -2,7 +2,7 @@
   <v-dialog v-model="isEditItemDialog" persistent max-width="600px">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Edit Profile</span>
+        <span class="text-h5">Edit Item</span>
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -59,6 +59,28 @@ export default class EditItemComponent extends Vue {
     console.log("親コンポーネントのメソッド");
   }
 
+  async saveEditItem() {
+    //入力欄を判定
+    if (this.hasEmptyProperty(this.dialogEditItemData)) {
+      this.editItemWarningMessage = "情報を入力してください";
+      return false;
+    }
+    const docRef = doc(db, "contents", this.dialogCurrentData.id);
+    const updatedData = this.prioritizeUpdatedData();
+    try {
+      await updateDoc(docRef, updatedData);
+      //挿入後ストアを更新
+      this.setContents();
+      //入力情報クリア
+      this.clearEditDialogItem();
+    } catch (error) {
+      console.log(error);
+      //入力情報クリア
+      this.clearEditDialogItem();
+    }
+    this.isEditItemDialog = false;
+  }
+
   hasEmptyProperty(object: any) {
     for (let prop in object) {
       if (object.hasOwnProperty(prop) && object[prop] === "") {
@@ -99,23 +121,6 @@ export default class EditItemComponent extends Vue {
       description: description,
     };
     return updatedItem;
-  }
-
-  async saveEditItem() {
-    if (this.hasEmptyProperty(this.dialogEditItemData)) {
-      this.editItemWarningMessage = "情報を入力してください";
-      return false;
-    }
-    const docRef = doc(db, "contents", this.dialogCurrentData.id);
-    const updatedData = this.prioritizeUpdatedData();
-    try {
-      await updateDoc(docRef, updatedData);
-      this.setContents();
-      this.clearEditDialogItem();
-    } catch (error) {
-      console.log(error);
-    }
-    this.isEditItemDialog = false;
   }
 }
 </script>
