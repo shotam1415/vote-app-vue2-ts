@@ -5,10 +5,10 @@
     </v-card-title>
     <v-layout>
       <v-row>
-        <v-col cols="12" sm="3">
+        <v-col cols="12" md="3">
           <NavComponent @change-nav="changeNav" />
         </v-col>
-        <v-col cols="12" sm="9">
+        <v-col cols="12" md="9">
           <v-container height="800" width="100%">
             <v-list v-if="navNum === 0">
               <v-card max-width="800" class="mx-auto" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponent v-if="isShow" :chartData="chartData" :options="options" /></v-card>

@@ -9,7 +9,7 @@
                 <v-text-field v-model="titleFilterValue" type="text" label="Search (Title)"></v-text-field>
               </v-col>
               <v-col cols="3">
-                <v-text-field v-model="descriptionFilterValue" type="text" label="Search (Discription)"> </v-text-field>
+                <v-text-field v-model="descriptionFilterValue" type="text" label="Search (Description)"> </v-text-field>
               </v-col>
             </v-row>
           </template>
@@ -63,12 +63,14 @@ export default class AdminContents extends Vue {
   titleFilterValue = "";
   descriptionFilterValue = "";
 
+  //タイトル検索
   titleFilter(value: string) {
     if (!this.titleFilterValue) {
       return true;
     }
     return value.toLowerCase().includes(this.titleFilterValue.toLowerCase());
   }
+  //ディスクリプション検索
   descriptionFilter(value: string) {
     if (!this.descriptionFilterValue) {
       return true;
@@ -79,10 +81,12 @@ export default class AdminContents extends Vue {
   @Ref() newItemComponent!: NewItemComponent;
   @Ref() editItemComponent!: EditItemComponent;
 
+  //newItem用のモーダルの表示
   openNewItemDialog() {
     this.newItemComponent.openNewItemDialog();
   }
 
+  //editItem用のモーダルの表示
   openEditItemDialog(item: Content) {
     this.editItemComponent.openEditItemDialog(item);
   }
@@ -95,6 +99,7 @@ export default class AdminContents extends Vue {
     }
   }
 
+  //ストア更新
   async setContents() {
     const contentRef = collection(db, "contents");
     const contentQuerySnapshot = await getDocs(contentRef);
