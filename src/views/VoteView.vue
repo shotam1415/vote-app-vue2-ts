@@ -67,6 +67,7 @@ import { collection, getDocs, runTransaction, doc, Transaction } from "firebase/
 import db from "../firebase/firestore";
 import { Plan } from "../types/Plan";
 import { User } from "../types/User";
+import { Getter } from "vuex-class";
 
 @Component
 export default class VoteViewComponent extends Vue {
@@ -78,9 +79,6 @@ export default class VoteViewComponent extends Vue {
   selectedPlan = {
     id: "",
     title: "",
-  };
-  justifycontent = {
-    center: "center",
   };
   isUsersVotesCollection = false;
   plans: Plan[] = [];
@@ -136,7 +134,7 @@ export default class VoteViewComponent extends Vue {
     }
     this.isVoting = true;
 
-    if (!this.isCurrentUser) {
+    if (!this.currentUser) {
       this.warningMessage = "投票するには会員登録が必要です。";
       this.isVoting = false;
       return false;
@@ -149,8 +147,8 @@ export default class VoteViewComponent extends Vue {
       return false;
     }
 
-    const user_id = this.isCurrentUser.id;
-    const user_name = this.isCurrentUser.name;
+    const user_id = this.currentUser.id;
+    const user_name = this.currentUser.name;
 
     try {
       await runTransaction(db, async (transaction) => {
@@ -168,16 +166,14 @@ export default class VoteViewComponent extends Vue {
       this.isVoting = false;
     }
   }
-  get isCurrentUser(): User | undefined {
-    if (this.$store.getters.currentUser) {
-      return this.$store.getters.currentUser;
-    }
-  }
+
+  @Getter currentUser!: User | undefined;
+
   mounted() {
     this.getPlans();
     const getIsUsersVotes = async () => {
-      if (this.isCurrentUser) {
-        this.isUsersVotesCollection = await this.isUsersVotes(this.isCurrentUser.id);
+      if (this.currentUser) {
+        this.isUsersVotesCollection = await this.isUsersVotes(this.currentUser.id);
       }
     };
     getIsUsersVotes();
