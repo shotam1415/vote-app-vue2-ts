@@ -4,58 +4,60 @@
       <v-alert v-show="successMessage" type="success">{{ successMessage }}</v-alert>
       <v-alert v-show="errorMessage" type="error">{{ errorMessage }}</v-alert>
       <v-alert v-show="warningMessage" type="warning">{{ warningMessage }}<router-link to="/signup">こちらより</router-link>会員登録をお願いします。</v-alert>
-      <v-row :justify="justifycontent.center">
-        <v-col
-          cols="5"
-          v-for="plan in plans"
-          :key="plan.title"
-          @click="
-            selectedPlan.id = plan.id;
-            selectedPlan.title = plan.title;
-          "
-        >
-          <div :class="{ isPlanActive: selectedPlan.id === plan.id }" class="isPlan">
-            <v-card class="mx-auto" max-width="344">
-              <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
-              <v-card-title>{{ plan.title }}</v-card-title>
-              <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
-            </v-card>
-          </div>
+      <v-container>
+        <v-row justify="center">
+          <v-col sm="5" cols="12" v-for="plan in plans" :key="plan.title">
+            <v-hover v-slot="{ hover }">
+              <v-card
+                class="mx-auto"
+                max-width="350"
+                :class="[{ 'on-hover': hover }, { isPlanActive: selectedPlan.id === plan.id }]"
+                @click="
+                  selectedPlan.id = plan.id;
+                  selectedPlan.title = plan.title;
+                "
+              >
+                <v-img src="../assets/thumbnail dummy.jpg" height="200px"></v-img>
+                <v-card-title>{{ plan.title }}</v-card-title>
+                <v-card-subtitle>{{ plan.description }}</v-card-subtitle>
+              </v-card>
+            </v-hover>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-container>
+    <v-container>
+      <v-row>
+        <v-col sm="4" cols="12" class="mx-auto">
+          <v-btn v-bind:loading="isVoting" block v-bind:disabled="!selectedPlan.id || isVoting" @click="insertVote">投票する</v-btn>
         </v-col>
       </v-row>
     </v-container>
-    <div class="btnWrap">
-      <v-btn v-bind:loading="isVoting" block v-bind:disabled="!selectedPlan.id || isVoting" @click="insertVote">投票する</v-btn>
-    </div>
-    <div class="note">
+    <v-container>
       <p>Cardのサムネイルに使用している画像の引用先</p>
       著作者：<a
         target="_blank"
         href="https://jp.freepik.com/free-vector/flat-neon-gaming-youtube-thumbnail_33809384.htm#query=%E3%82%B5%E3%83%A0%E3%83%8D%E3%82%A4%E3%83%AB&position=49&from_view=keyword&track=sph"
         >Freepik</a
       >
-    </div>
+    </v-container>
   </div>
 </template>
-
 <style lang="scss">
-.btnWrap {
-  max-width: 400px;
-  margin: 0 auto;
+.v-card {
+  transition: opacity 0.4s ease-in-out;
+  cursor: pointer;
+}
+.v-card:not(.on-hover) {
+  opacity: 0.6;
 }
 
-.note {
-  text-align: center;
-}
-.isPlan {
-  margin: 0 auto;
-  max-width: 344px;
-  border-radius: 4px;
-  border: solid 2px white;
+.show-btns {
+  color: rgba(255, 255, 255, 1) !important;
 }
 
 .isPlanActive {
-  border: solid 2px red;
+  opacity: 1 !important;
 }
 </style>
 
