@@ -2,7 +2,7 @@
   <v-dialog v-model="isEditItemDialog" persistent max-width="600px">
     <v-card>
       <v-card-title>
-        <span class="text-h5">Edit Profile</span>
+        <span class="text-h5">Edit Item</span>
       </v-card-title>
       <v-card-text>
         <v-container>
