@@ -6,34 +6,12 @@
     <v-layout>
       <v-row>
         <v-col cols="12" sm="3">
-          <v-container>
-            <v-card>
-              <v-navigation-drawer permanent width="100%">
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title class="text-h6"> Application </v-list-item-title>
-                    <v-list-item-subtitle> subtext </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider></v-divider>
-                <v-list dense nav>
-                  <v-list-item v-for="(item, index) in navItems" :key="item.title" link @click="changeNav(index)">
-                    <v-list-item-icon>
-                      <v-icon>{{ item.icon }}</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                      <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-navigation-drawer>
-            </v-card>
-          </v-container>
+          <NavComponent @change-nav="changeNav" />
         </v-col>
         <v-col cols="12" sm="9">
           <v-container height="800" width="100%">
             <v-list v-if="navNum === 0">
-              <div class="chartWrap" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponent v-if="isShow" :chartData="chartData" :options="options" /></div>
+              <v-card max-width="800" class="mx-auto" v-if="isShow" v-bind:class="{ isActive: navNum === 0 }"><ChartComponent v-if="isShow" :chartData="chartData" :options="options" /></v-card>
             </v-list>
             <v-list v-if="navNum === 1">
               <AdminContents />
@@ -44,29 +22,12 @@
     </v-layout>
   </div>
 </template>
-<style lang="scss">
-.chartWrap {
-  max-width: 800px;
-  width: 100%;
-  height: 400px;
-  margin: auto;
-  opacity: 0;
-  pointer-events: none;
-  transition-duration: 0.3s;
-  &.isActive {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  > div > canvas {
-    width: 100%;
-  }
-}
-</style>
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import ChartComponent from "@/components/ChartComponent.vue";
 import AdminContents from "../components/admin/AdminContents.vue";
+import NavComponent from "@/components/admin/NavComponent.vue";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import db from "../firebase/firestore";
@@ -81,15 +42,11 @@ type plans = {
   components: {
     ChartComponent,
     AdminContents,
+    NavComponent,
   },
 })
 export default class AdminViewComponent extends Vue {
   // 変数
-  navItems = [
-    { title: "voteTotal", icon: "mdi-notification-clear-all" },
-    { title: "contents", icon: "mdi-aspect-ratio" },
-  ];
-
   navNum = 0;
   isShow = false;
   plans: plans[] = [];
@@ -111,8 +68,11 @@ export default class AdminViewComponent extends Vue {
     responsive: true,
     maintainAspectRatio: false,
   };
-
   @Getter currentUser!: any;
+
+  changeNav(num: number) {
+    this.navNum = num;
+  }
 
   async getPlans() {
     const plansRef = query(collection(db, "plans"), orderBy("title", "asc"));
@@ -159,11 +119,6 @@ export default class AdminViewComponent extends Vue {
       this.chartTotal[i] = this.plans[i].count;
     }
     this.isShow = true;
-  }
-
-  changeNav(num: number) {
-    this.navNum = num;
-    console.log(this.navNum);
   }
 
   onChangeLoadingStatus() {
