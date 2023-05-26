@@ -1,23 +1,61 @@
-# vue-project
+# vote-app-vue2-ts
 
-## Project setup
+## セットアップ
+
+.env の準備
+担当者に依頼してください
 
 ```
-npm install
+npm ci
 ```
 
-### Compiles and hot-reloads for development
+### 開発用サーバーを立てる
 
 ```
 npm run serve
 ```
 
-### Compiles and minifies for production
+### 静的ファイルの出力
 
 ```
 npm run build
 ```
 
-### Customize configuration
+### 本番サーバーへデプロイ
 
-See [Configuration Reference](https://cli.vuejs.org/config/).
+```
+npm run deploy
+```
+
+### 本番サーバー url
+
+```
+
+https://vote-app-vue.web.app/
+```
+
+### アカウント情報
+
+```
+一般アカウント(投票側)
+
+email:testsample@sample.com
+pw:88888888
+
+管理者アカウント(集計側)
+
+email:admin@sample.com
+pw:88888888
+
+```
+
+### アプリの説明
+
+投票の集計を目的としたアプリです。
+
+会員登録することで投票ができます。
+管理者のみ以下の URL にアクセスすることでき、集計の確認ができます。
+
+https://vote-app-vue.web.app/admin
+
+※admin ページにある、contents というページは、CRUD の処理の練習用に作っただけなので、意味はありません。
