@@ -2,7 +2,6 @@ import { createLocalVue, shallowMount } from "@vue/test-utils";
 import VoteViewComponent from "@/views/VoteView.vue";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
-import "../../src/firebase/firebase";
 
 //vuetifyのコンポーネントとVuexを読み込めるようにする
 const localVue = createLocalVue();
