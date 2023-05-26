@@ -95,7 +95,7 @@ export default class AdminContents extends Vue {
     const result = confirm("本当に消去しますか。");
     if (result) {
       await deleteDoc(doc(db, "contents", content_id));
-      this.setContents();
+      await this.setContents();
     }
   }
 
