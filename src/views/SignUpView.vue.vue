@@ -36,7 +36,7 @@ import { User } from "@/types/User";
 import { Getter } from "vuex-class";
 
 @Component
-export default class SignInView extends Vue {
+export default class SignUpView extends Vue {
   showPassword = false;
   userModel = {
     name: "",
