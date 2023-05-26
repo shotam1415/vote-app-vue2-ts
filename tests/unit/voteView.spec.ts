@@ -38,14 +38,13 @@ const wrapper = shallowMount(VoteViewComponent, {
     currentUser: () => ({ id: "", name: "" }),
   },
 });
+const vm: any = wrapper.vm;
 
 describe("VoteView.vue", () => {
-  it("successMessageに値が入ったら表示されるかどうか", async () => {
-    const successMessage = "投票が完了しました。";
+  it("【正常系】showVotedMessageのsuccessMessage", async () => {
+    const message = "投票が完了しました。";
 
-    const vm: any = wrapper.vm;
-
-    await vm.showVotedMessage("success", successMessage);
+    await vm.showVotedMessage("success", message);
 
     const result = wrapper
       .findAllComponents({ name: "v-alert" })
@@ -53,6 +52,33 @@ describe("VoteView.vue", () => {
       .at(0)
       .text();
 
-    expect(result).toBe(successMessage);
+    expect(result).toBe(message);
+  });
+  it("【正常系】showVotedMessageのwarningMessage", async () => {
+    const message = "投票するには会員登録が必要です。";
+    const holdMessage = "こちらより会員登録をお願いします。";
+
+    await vm.showVotedMessage("warning", message);
+
+    const result = wrapper
+      .findAllComponents({ name: "v-alert" })
+      .filter((w) => w.attributes("type") == "warning")
+      .at(0)
+      .text();
+
+    expect(result).toBe(message + holdMessage);
+  });
+  it("【正常系】showVotedMessageのerrorMessage", async () => {
+    const message = "投票エラーです。";
+
+    await vm.showVotedMessage("error", message);
+
+    const result = wrapper
+      .findAllComponents({ name: "v-alert" })
+      .filter((w) => w.attributes("type") == "error")
+      .at(0)
+      .text();
+
+    expect(result).toBe(message);
   });
 });
