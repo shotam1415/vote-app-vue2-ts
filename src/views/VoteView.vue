@@ -130,15 +130,12 @@ export default class VoteViewComponent extends Vue {
   async showVotedMessage(type: string, message: string) {
     switch (type) {
       case "success":
-        console.log("success");
         this.successMessage = message;
         break;
       case "warning":
-        console.log("warning");
         this.warningMessage = message;
         break;
       case "error":
-        console.log("error");
         this.errorMessage = message;
         break;
       default:

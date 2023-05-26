@@ -56,13 +56,12 @@ export default class EditItemComponent extends Vue {
 
   @Emit("childEmitSetContents")
   setContents() {
-    console.log("親コンポーネントのメソッド");
+    // do nothing.
   }
 
   async saveEditItem() {
     //入力欄を判定
     if (this.hasAllEmptyProperty(this.dialogEditItemData)) {
-      console.log(this.hasAllEmptyProperty(this.dialogEditItemData));
       this.editItemWarningMessage = "情報を入力してください";
       return false;
     }

@@ -47,7 +47,7 @@ export default class AdminContentsNewItem extends Vue {
 
   @Emit("childEmitSetContents")
   setContents() {
-    console.log("setContents");
+    // do nothing.
   }
 
   //保存

@@ -136,7 +136,6 @@ export default class AdminViewComponent extends Vue {
     getAuth().onAuthStateChanged(() => {
       console.log(this.currentUser);
       if (!this.currentUser || this.currentUser.role !== 0) {
-        console.log("八卦しない？？");
         this.$router.push("/signin");
       }
     });
