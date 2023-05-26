@@ -61,7 +61,8 @@ export default class EditItemComponent extends Vue {
 
   async saveEditItem() {
     //入力欄を判定
-    if (this.hasEmptyProperty(this.dialogEditItemData)) {
+    if (this.hasAllEmptyProperty(this.dialogEditItemData)) {
+      console.log(this.hasAllEmptyProperty(this.dialogEditItemData));
       this.editItemWarningMessage = "情報を入力してください";
       return false;
     }
@@ -81,13 +82,13 @@ export default class EditItemComponent extends Vue {
     this.isEditItemDialog = false;
   }
 
-  hasEmptyProperty(object: any) {
+  hasAllEmptyProperty(object: any) {
     for (let prop in object) {
-      if (object.hasOwnProperty(prop) && object[prop] === "") {
-        return true;
+      if (object.hasOwnProperty(prop) && object[prop] !== "") {
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   openEditItemDialog(item: Content) {
