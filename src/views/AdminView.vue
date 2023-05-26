@@ -67,6 +67,7 @@ export default class AdminViewComponent extends Vue {
     maintainAspectRatio: false,
     scales: { yAxes: [{ ticks: { beginAtZero: true } }] },
   };
+
   @Getter currentUser!: any;
 
   changeNav(num: number) {
@@ -130,10 +131,12 @@ export default class AdminViewComponent extends Vue {
     }
   }
 
-  async mounted() {
+  mounted() {
     // ユーザーの権限判定
     getAuth().onAuthStateChanged(() => {
+      console.log(this.currentUser);
       if (!this.currentUser || this.currentUser.role !== 0) {
+        console.log("八卦しない？？");
         this.$router.push("/signin");
       }
     });

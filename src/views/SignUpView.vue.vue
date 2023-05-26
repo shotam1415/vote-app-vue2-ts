@@ -42,7 +42,7 @@ export default class SignInView extends Vue {
     name: "",
     email: "",
     password: "",
-    role: 0,
+    role: 1,
     created_at: new Date(),
     update_at: new Date(),
   };
@@ -77,7 +77,7 @@ export default class SignInView extends Vue {
 
   @Getter currentUser!: User | undefined;
 
-  async mounted() {
+  mounted() {
     // ログイン済なら投票画面へ遷移させる
     getAuth().onAuthStateChanged(() => {
       if (!this.currentUser) {

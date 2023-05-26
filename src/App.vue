@@ -64,7 +64,7 @@ export default class AppComponent extends Vue {
 
   @Getter currentUser!: User | undefined;
 
-  async mounted() {
+  mounted() {
     this.auth.onAuthStateChanged(() => {
       this.getCurrentUser();
     });
