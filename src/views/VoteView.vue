@@ -86,6 +86,7 @@ export default class VoteViewComponent extends Vue {
 
   //「投票する」のロジック
   async insertVote() {
+    console.log(this.currentUser);
     //投票中の判定
     if (this.isVoting) {
       await this.showVotedMessage("error", "投票処理中ですのでお待ちください。");
@@ -96,6 +97,13 @@ export default class VoteViewComponent extends Vue {
     //ログイン中かどうかの判定
     if (!this.currentUser) {
       await this.showVotedMessage("warning", "投票するには会員登録が必要です。");
+      this.isVoting = false;
+      return false;
+    }
+
+    //管理者かどうかの判定
+    if (this.currentUser.role === 0) {
+      await this.showVotedMessage("error", "管理者は投票ができません");
       this.isVoting = false;
       return false;
     }
@@ -130,15 +138,12 @@ export default class VoteViewComponent extends Vue {
   async showVotedMessage(type: string, message: string) {
     switch (type) {
       case "success":
-        console.log("success");
         this.successMessage = message;
         break;
       case "warning":
-        console.log("warning");
         this.warningMessage = message;
         break;
       case "error":
-        console.log("error");
         this.errorMessage = message;
         break;
       default:
