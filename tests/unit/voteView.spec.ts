@@ -1,4 +1,4 @@
-import { createLocalVue, shallowMount, mount } from "@vue/test-utils";
+import { createLocalVue, shallowMount } from "@vue/test-utils";
 import VoteViewComponent from "@/views/VoteView.vue";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
