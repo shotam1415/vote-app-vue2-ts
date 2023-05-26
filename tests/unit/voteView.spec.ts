@@ -28,20 +28,20 @@ jest.mock("firebase/firestore", () => ({
   Transaction: jest.fn(),
 }));
 
+const wrapper = shallowMount(VoteViewComponent, {
+  localVue,
+  store,
+  methods: {
+    getPlans: jest.fn(),
+  },
+  computed: {
+    currentUser: () => ({ id: "", name: "" }),
+  },
+});
+
 describe("VoteView.vue", () => {
   it("successMessageに値が入ったら表示されるかどうか", async () => {
     const successMessage = "投票が完了しました。";
-    const wrapper = shallowMount(VoteViewComponent, {
-      localVue,
-      propsData: { successMessage },
-      store,
-      methods: {
-        getPlans: jest.fn(),
-      },
-      computed: {
-        currentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
-      },
-    });
 
     const vm: any = wrapper.vm;
 
