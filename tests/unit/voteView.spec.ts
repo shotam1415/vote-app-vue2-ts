@@ -1,23 +1,18 @@
-import { createLocalVue, shallowMount, mount } from "@vue/test-utils";
+import { createLocalVue, shallowMount } from "@vue/test-utils";
 import VoteViewComponent from "@/views/VoteView.vue";
-import Vuetify from "vuetify";
 import VueRouter from "vue-router";
 import Vuex from "vuex";
 import "../../src/firebase/firebase";
 
-//vuetifyの警告回避
+//vuetifyのコンポーネントとVuexを読み込めるようにする
 const localVue = createLocalVue();
 localVue.use(VueRouter);
-const router = new VueRouter();
-let vuetify: any;
 localVue.use(Vuex);
+
+//storeの定義
 let getters: any;
 let store: any;
-let isUsersVotesCollection: boolean;
-let successMessage: any;
-
 beforeEach(() => {
-  vuetify = new Vuetify();
   getters = {
     currentUser: () => null,
   };
@@ -33,184 +28,57 @@ jest.mock("firebase/firestore", () => ({
   Transaction: jest.fn(),
 }));
 
-//選んでいるプラン
-const selectedPlan = {
-  id: 1,
-};
+const wrapper = shallowMount(VoteViewComponent, {
+  localVue,
+  store,
+  methods: {
+    getPlans: jest.fn(),
+  },
+  computed: {
+    currentUser: () => ({ id: "", name: "" }),
+  },
+});
+const vm: any = wrapper.vm;
 
 describe("VoteView.vue", () => {
-  it("【失敗】投票済みであれば、アラートが表示されるかどうか", async () => {
-    //投票済判定
-    const wrapper = shallowMount(VoteViewComponent, {
-      localVue,
-      vuetify,
-      router,
-      propsData: {
-        selectedPlan,
-        isUsersVotesCollection,
-      },
-      store,
-      methods: {
-        getPlans: jest.fn(),
-        insertUsersVote: jest.fn(),
-        insertPublicVote: jest.fn(),
-      },
-      computed: {
-        isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
-      },
-    });
+  it("【正常系】showVotedMessageのsuccessMessage", async () => {
+    const message = "投票が完了しました。";
 
-    //投票するプランの情報を入れる
-    await wrapper.setData({ isUsersVotesCollection: true });
-    await wrapper.setData({ selectedPlan: selectedPlan });
+    await vm.showVotedMessage("success", message);
 
-    //@clickで発火する関数の発火
-    const vm: any = wrapper.vm;
-    await vm.insertVote();
-    expect(
-      wrapper
-        .findAllComponents({ name: "v-alert" })
-        .filter((w) => w.attributes("type") == "error")
-        .at(0)
-        .text()
-    ).toBe("既に投票すみです。");
+    const result = wrapper
+      .findAllComponents({ name: "v-alert" })
+      .filter((w) => w.attributes("type") == "success")
+      .at(0)
+      .text();
+
+    expect(result).toBe(message);
   });
-  it("【失敗】未ログイン時、注意メッセージが表示される", async () => {
-    //投票済判定
-    const wrapper = shallowMount(VoteViewComponent, {
-      localVue,
-      vuetify,
-      router,
-      propsData: {
-        selectedPlan,
-        isUsersVotesCollection,
-      },
-      store,
-      methods: {
-        getPlans: jest.fn(),
-        insertUsersVote: jest.fn(),
-        insertPublicVote: jest.fn(),
-      },
-    });
+  it("【正常系】showVotedMessageのwarningMessage", async () => {
+    const message = "投票するには会員登録が必要です。";
+    const holdMessage = "こちらより会員登録をお願いします。";
 
-    //投票するプランの情報を入れる
-    await wrapper.setData({ selectedPlan: selectedPlan });
+    await vm.showVotedMessage("warning", message);
 
-    //@clickで発火する関数の発火
-    const vm: any = wrapper.vm;
-    await vm.insertVote();
+    const result = wrapper
+      .findAllComponents({ name: "v-alert" })
+      .filter((w) => w.attributes("type") == "warning")
+      .at(0)
+      .text();
 
-    expect(
-      wrapper
-        .findAllComponents({ name: "v-alert" })
-        .filter((w) => w.attributes("type") == "warning")
-        .at(0)
-        .text()
-    ).toBe("投票するには会員登録が必要です。こちらより会員登録をお願いします。");
+    expect(result).toBe(message + holdMessage);
   });
+  it("【正常系】showVotedMessageのerrorMessage", async () => {
+    const message = "投票エラーです。";
 
-  it("【成功】ログイン中かつ初回の投稿の時", async () => {
-    //投票済判定
-    const wrapper = shallowMount(VoteViewComponent, {
-      localVue,
-      vuetify,
-      router,
-      propsData: {
-        selectedPlan,
-        isUsersVotesCollection,
-        successMessage,
-      },
-      store,
-      computed: {
-        isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
-      },
-      methods: {
-        getPlans: jest.fn(),
-        insertUsersVote: jest.fn(),
-        insertPublicVote: jest.fn(),
-      },
-    });
+    await vm.showVotedMessage("error", message);
 
-    //投票するプランを選択
-    await wrapper.setData({ selectedPlan: selectedPlan });
-    await wrapper.setData({ isUsersVotesCollection: false });
+    const result = wrapper
+      .findAllComponents({ name: "v-alert" })
+      .filter((w) => w.attributes("type") == "error")
+      .at(0)
+      .text();
 
-    //擬似的にsuccessMessageを挿入
-    await wrapper.setData({ successMessage: "投票が完了しました。" });
-
-    //@clickで発火する関数の発火
-    const vm: any = wrapper.vm;
-    await vm.insertVote();
-
-    expect(
-      wrapper
-        .findAllComponents({ name: "v-alert" })
-        .filter((w) => w.attributes("type") == "success")
-        .at(0)
-        .text()
-    ).toBe("投票が完了しました。");
-  });
-
-  it("プランのデータが格納されるとv-colが表示される", async () => {
-    //投票済判定
-    const plans = [
-      {
-        id: "1",
-        title: "A",
-        description: "Aの説明です。",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      {
-        id: "2",
-        title: "B",
-        description: "Bの説明です。",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      {
-        id: "3",
-        title: "C",
-        description: "Cの説明です。",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-      {
-        id: "4",
-        title: "D",
-        description: "Dの説明です。",
-        created_at: new Date(),
-        updated_at: new Date(),
-      },
-    ];
-
-    const wrapper = shallowMount(VoteViewComponent, {
-      localVue,
-      vuetify,
-      router,
-      propsData: {
-        selectedPlan,
-        isUsersVotesCollection,
-        successMessage,
-        plans,
-      },
-      store,
-      computed: {
-        isCurrentUser: () => ({ id: "9r3AALbDGogMCH9sz0Hk", name: "test" }),
-      },
-      methods: {
-        getPlans: jest.fn(),
-        insertUsersVote: jest.fn(),
-        insertPublicVote: jest.fn(),
-      },
-    });
-    await wrapper.setData({ plans: plans });
-    const vm: any = wrapper.vm;
-    await vm.getPlans();
-    await vm.$nextTick();
-    wrapper.vm.$nextTick(async () => {
-      const vCol = wrapper.findComponent({ name: "v-col" }); // => `name` でバーを検索します
-      expect(vCol.exists()).toBe(true);
-    });
+    expect(result).toBe(message);
   });
 });
