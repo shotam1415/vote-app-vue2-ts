@@ -42,7 +42,7 @@ export default class SignInView extends Vue {
     name: "",
     email: "",
     password: "",
-    role: 0,
+    role: 1,
     created_at: new Date(),
     update_at: new Date(),
   };
