@@ -88,7 +88,6 @@ export default class VoteViewComponent extends Vue {
   async insertVote() {
     //投票中の判定
     if (this.isVoting) {
-      console.log("this.isVoting");
       await this.showVotedMessage("error", "投票処理中ですのでお待ちください。");
       return false;
     }
@@ -96,7 +95,6 @@ export default class VoteViewComponent extends Vue {
 
     //ログイン中かどうかの判定
     if (!this.currentUser) {
-      console.log("this.currentUser");
       await this.showVotedMessage("warning", "投票するには会員登録が必要です。");
       this.isVoting = false;
       return false;
@@ -104,20 +102,18 @@ export default class VoteViewComponent extends Vue {
 
     // データ挿入
     if (this.isUsersVotesCollection) {
-      console.log("this.isUsersVotesCollection");
       await this.showVotedMessage("error", "投票は一度しかできません。");
       this.isVoting = false;
       return false;
     }
 
     const user_id = this.currentUser.id;
-    const user_name = this.currentUser.name;
 
     try {
       await runTransaction(db, async (transaction) => {
         // 両方のドキュメントをトランザクション内で追加
         this.insertUsersVote(user_id, transaction);
-        this.insertPublicVote(user_name, transaction);
+        this.insertPublicVote(user_id, transaction);
         await this.showVotedMessage("success", "投票が完了しました。");
         this.isUsersVotesCollection = true;
         this.isVoting = false;
@@ -181,7 +177,7 @@ export default class VoteViewComponent extends Vue {
   //Votesコレクションへ投票データ挿入
   async insertPublicVote(user_name: string, transaction: Transaction) {
     const votesPath = collection(db, "public_votes");
-    const votesRef = doc(votesPath, this.selectedPlan.id);
+    const votesRef = doc(votesPath);
     transaction.set(votesRef, {
       plans_title: this.selectedPlan.title,
       users_name: user_name,
